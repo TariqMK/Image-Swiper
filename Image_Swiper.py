@@ -55,9 +55,23 @@ except Exception as e:
 class ImageOrganizer:
     def __init__(self, root):
         self.root = root
-        self.root.title("Image & Video Organizer - Swipe to Decide")
-        self.root.geometry("900x700")
-        self.root.configure(bg='#2b2b2b')
+        self.root.title("Memory Organizer")
+        self.root.geometry("1100x800")
+        
+        # Modern color scheme - dark elegant theme
+        self.bg_primary = '#0f0f0f'
+        self.bg_secondary = '#1a1a1a'
+        self.bg_card = '#252525'
+        self.accent_primary = '#6366f1'  # Indigo
+        self.accent_success = '#10b981'  # Emerald
+        self.accent_danger = '#ef4444'   # Red
+        self.accent_warning = '#f59e0b'  # Amber
+        self.accent_info = '#3b82f6'     # Blue
+        self.text_primary = '#f8fafc'
+        self.text_secondary = '#94a3b8'
+        self.text_muted = '#64748b'
+        
+        self.root.configure(bg=self.bg_primary)
         
         self.images = []
         self.current_index = 0
@@ -85,7 +99,6 @@ class ImageOrganizer:
         self.ffmpeg_available = self.check_ffmpeg()
         if not self.ffmpeg_available:
             print("WARNING: ffmpeg not found. Video thumbnails will not be generated.")
-            print("Install ffmpeg and add to PATH for video support.")
         
         # Supported formats
         self.image_extensions = {
@@ -123,22 +136,18 @@ class ImageOrganizer:
             )
         ''')
         
-        # Migration: Add is_video and thumbnail_path columns if they don't exist
         try:
             cursor.execute("SELECT is_video FROM image_cache LIMIT 1")
         except sqlite3.OperationalError:
-            print("Migrating database: adding is_video column...")
             cursor.execute("ALTER TABLE image_cache ADD COLUMN is_video INTEGER DEFAULT 0")
         
         try:
             cursor.execute("SELECT thumbnail_path FROM image_cache LIMIT 1")
         except sqlite3.OperationalError:
-            print("Migrating database: adding thumbnail_path column...")
             cursor.execute("ALTER TABLE image_cache ADD COLUMN thumbnail_path TEXT")
         
         conn.commit()
         conn.close()
-        print(f"Database initialized at: {self.db_path}")
     
     def get_video_date(self, video_path):
         if not self.ffmpeg_available:
@@ -157,9 +166,8 @@ class ImageOrganizer:
             if 'format' in data and 'tags' in data['format']:
                 creation_time = data['format']['tags'].get('creation_time')
                 if creation_time:
-                    # Parse ISO 8601 format and remove timezone info for consistency
                     dt = datetime.fromisoformat(creation_time.replace('Z', '+00:00'))
-                    return dt.replace(tzinfo=None)  # Strip timezone
+                    return dt.replace(tzinfo=None)
         except:
             pass
         
@@ -250,12 +258,13 @@ class ImageOrganizer:
     def matches_specific_date(self, file_date, target_date):
         if file_date is None or target_date is None:
             return False
-        return (file_date.year == target_date.year and 
-                file_date.month == target_date.month and 
-                file_date.day == target_date.day)
+        if file_date.tzinfo is not None:
+            file_date = file_date.replace(tzinfo=None)
+        file_date_only = datetime(file_date.year, file_date.month, file_date.day)
+        target_date_only = datetime(target_date.year, target_date.month, target_date.day)
+        return file_date_only == target_date_only
     
     def format_file_size(self, size_bytes):
-        """Convert bytes to human readable format"""
         if size_bytes < 1024:
             return f"{size_bytes} B"
         elif size_bytes < 1024 * 1024:
@@ -267,75 +276,314 @@ class ImageOrganizer:
     
     def is_video_file(self, file_path):
         return file_path.suffix.lower() in self.video_extensions
+    
+    def create_modern_button(self, parent, text, command, bg_color, width=140, height=50):
+        btn = tk.Button(
+            parent,
+            text=text,
+            command=command,
+            bg=bg_color,
+            fg=self.text_primary,
+            font=('Segoe UI', 11, 'bold'),
+            bd=0,
+            activebackground=bg_color,
+            activeforeground=self.text_primary,
+            cursor='hand2',
+            relief=tk.FLAT,
+            width=width//8,
+            height=height//25
+        )
+        
+        # Hover effect
+        def on_enter(e):
+            btn['bg'] = self.lighten_color(bg_color)
+        def on_leave(e):
+            btn['bg'] = bg_color
+        
+        btn.bind("<Enter>", on_enter)
+        btn.bind("<Leave>", on_leave)
+        
+        return btn
+    
+    def lighten_color(self, hex_color):
+        # Simple color lightening
+        hex_color = hex_color.lstrip('#')
+        r, g, b = int(hex_color[0:2], 16), int(hex_color[2:4], 16), int(hex_color[4:6], 16)
+        r = min(255, r + 20)
+        g = min(255, g + 20)
+        b = min(255, b + 20)
+        return f'#{r:02x}{g:02x}{b:02x}'
         
     def setup_ui(self):
-        top_frame = tk.Frame(self.root, bg='#2b2b2b', pady=10)
-        top_frame.pack(fill=tk.X)
+        # Header bar
+        header = tk.Frame(self.root, bg=self.bg_secondary, height=70)
+        header.pack(fill=tk.X, side=tk.TOP)
+        header.pack_propagate(False)
         
-        tk.Button(top_frame, text="Select Folder", command=self.select_folder, bg='#4CAF50', fg='white',
-                 font=('Arial', 12, 'bold'), padx=20, pady=5, cursor='hand2').pack(side=tk.LEFT, padx=10)
+        # Title
+        title_frame = tk.Frame(header, bg=self.bg_secondary)
+        title_frame.pack(side=tk.LEFT, padx=25, pady=15)
         
-        tk.Button(top_frame, text="🧹 Clean Thumbnails", command=self.clean_thumbnails, bg='#9C27B0', fg='white',
-                 font=('Arial', 10), padx=15, pady=5, cursor='hand2').pack(side=tk.LEFT, padx=5)
+        tk.Label(
+            title_frame,
+            text="📸 Memory Organizer",
+            bg=self.bg_secondary,
+            fg=self.text_primary,
+            font=('Segoe UI', 18, 'bold')
+        ).pack(side=tk.LEFT)
         
-        self.counter_label = tk.Label(top_frame, text="No files loaded", bg='#2b2b2b', fg='white', font=('Arial', 12))
-        self.counter_label.pack(side=tk.LEFT, padx=20)
+        # Action buttons in header
+        btn_frame = tk.Frame(header, bg=self.bg_secondary)
+        btn_frame.pack(side=tk.RIGHT, padx=20)
+        
+        self.create_modern_button(btn_frame, "📁 Select Folder", self.select_folder, 
+                                 self.accent_primary, 130, 40).pack(side=tk.LEFT, padx=5)
+        self.create_modern_button(btn_frame, "🧹 Clean", self.clean_thumbnails, 
+                                 self.accent_warning, 100, 40).pack(side=tk.LEFT, padx=5)
+        
+        # Control panel
+        control_panel = tk.Frame(self.root, bg=self.bg_card, height=80)
+        control_panel.pack(fill=tk.X, padx=15, pady=(10, 0))
+        control_panel.pack_propagate(False)
+        
+        # Left side - filters
+        filter_frame = tk.Frame(control_panel, bg=self.bg_card)
+        filter_frame.pack(side=tk.LEFT, padx=20, pady=15)
         
         self.random_var = tk.BooleanVar(value=False)
-        tk.Checkbutton(top_frame, text="Random Order", variable=self.random_var, command=self.toggle_random_mode,
-                      bg='#2b2b2b', fg='white', selectcolor='#1a1a1a', font=('Arial', 10), cursor='hand2').pack(side=tk.LEFT, padx=10)
+        self.create_checkbox(filter_frame, "🎲 Random", self.random_var, 
+                           self.toggle_random_mode).pack(side=tk.LEFT, padx=8)
         
         self.subdirs_var = tk.BooleanVar(value=True)
-        tk.Checkbutton(top_frame, text="Include Subdirectories", variable=self.subdirs_var, command=self.toggle_subdirs,
-                      bg='#2b2b2b', fg='white', selectcolor='#1a1a1a', font=('Arial', 10), cursor='hand2').pack(side=tk.LEFT, padx=10)
+        self.create_checkbox(filter_frame, "📂 Subdirectories", self.subdirs_var, 
+                           self.toggle_subdirs).pack(side=tk.LEFT, padx=8)
         
         self.this_day_var = tk.BooleanVar(value=False)
-        tk.Checkbutton(top_frame, text="📅 On This Day", variable=self.this_day_var, command=self.toggle_this_day,
-                      bg='#2b2b2b', fg='#FFD700', selectcolor='#1a1a1a', font=('Arial', 10, 'bold'), cursor='hand2').pack(side=tk.LEFT, padx=10)
+        self.create_checkbox(filter_frame, "📅 On This Day", self.this_day_var, 
+                           self.toggle_this_day, self.accent_primary).pack(side=tk.LEFT, padx=8)
         
-        tk.Button(top_frame, text="📆 Pick Date", command=self.pick_specific_date, bg='#2196F3', fg='white',
-                 font=('Arial', 10), padx=15, pady=5, cursor='hand2').pack(side=tk.LEFT, padx=5)
+        # Right side - counter and stats
+        stats_frame = tk.Frame(control_panel, bg=self.bg_card)
+        stats_frame.pack(side=tk.RIGHT, padx=20, pady=15)
         
-        self.stats_label = tk.Label(top_frame, text="Processed: 0 | Deleted: 0 | Saved: 0 MB",
-                                    bg='#2b2b2b', fg='#888888', font=('Arial', 9))
-        self.stats_label.pack(side=tk.LEFT, padx=20)
+        self.counter_label = tk.Label(
+            stats_frame,
+            text="No files loaded",
+            bg=self.bg_card,
+            fg=self.text_primary,
+            font=('Segoe UI', 11, 'bold')
+        )
+        self.counter_label.pack(side=tk.TOP)
         
-        self.canvas = tk.Canvas(self.root, bg='#1a1a1a', highlightthickness=0, cursor='hand2')
-        self.canvas.pack(fill=tk.BOTH, expand=True, padx=20, pady=10)
+        self.stats_label = tk.Label(
+            stats_frame,
+            text="Ready to organize",
+            bg=self.bg_card,
+            fg=self.text_secondary,
+            font=('Segoe UI', 9)
+        )
+        self.stats_label.pack(side=tk.TOP, pady=(3, 0))
+        
+        # Main content area
+        content = tk.Frame(self.root, bg=self.bg_primary)
+        content.pack(fill=tk.BOTH, expand=True, padx=15, pady=10)
+        
+        # Image viewer card
+        viewer_card = tk.Frame(content, bg=self.bg_card, bd=0, highlightthickness=1, 
+                              highlightbackground=self.bg_secondary)
+        viewer_card.pack(fill=tk.BOTH, expand=True)
+        
+        # Canvas for image
+        self.canvas = tk.Canvas(
+            viewer_card,
+            bg=self.bg_secondary,
+            highlightthickness=0,
+            cursor='hand2'
+        )
+        self.canvas.pack(fill=tk.BOTH, expand=True, padx=2, pady=2)
         self.canvas.bind('<Button-1>', self.on_canvas_click)
         
-        self.date_label = tk.Label(self.root, text="", bg='#2b2b2b', fg='#FFD700', font=('Arial', 10, 'bold'))
-        self.date_label.pack(pady=(5, 0))
+        # Info panel
+        info_panel = tk.Frame(self.root, bg=self.bg_card, height=120)
+        info_panel.pack(fill=tk.X, padx=15, pady=(0, 10))
+        info_panel.pack_propagate(False)
         
-        self.media_type_label = tk.Label(self.root, text="", bg='#2b2b2b', fg='#00BFFF', font=('Arial', 9, 'italic'))
-        self.media_type_label.pack(pady=(0, 5))
+        # Center container for all info
+        center_container = tk.Frame(info_panel, bg=self.bg_card)
+        center_container.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
         
-        self.path_label = tk.Label(self.root, text="", bg='#2b2b2b', fg='#888888', font=('Arial', 9))
-        self.path_label.pack(pady=(5, 0))
+        # Date and type
+        top_info = tk.Frame(center_container, bg=self.bg_card)
+        top_info.pack(pady=(0, 5))
         
-        self.filename_label = tk.Label(self.root, text="", bg='#2b2b2b', fg='#cccccc', font=('Arial', 10))
-        self.filename_label.pack(pady=(0, 5))
+        self.date_label = tk.Label(
+            top_info,
+            text="",
+            bg=self.bg_card,
+            fg=self.accent_primary,
+            font=('Segoe UI', 12, 'bold')
+        )
+        self.date_label.pack(side=tk.LEFT, padx=10)
         
-        self.filesize_label = tk.Label(self.root, text="", bg='#2b2b2b', fg='#888888', font=('Arial', 9))
-        self.filesize_label.pack(pady=(0, 5))
+        self.media_type_label = tk.Label(
+            top_info,
+            text="",
+            bg=self.bg_card,
+            fg=self.accent_info,
+            font=('Segoe UI', 9)
+        )
+        self.media_type_label.pack(side=tk.LEFT, padx=10)
         
-        button_frame = tk.Frame(self.root, bg='#2b2b2b', pady=20)
-        button_frame.pack()
+        # File info
+        file_info = tk.Frame(center_container, bg=self.bg_card)
+        file_info.pack(pady=(0, 5))
         
-        self.delete_btn = tk.Button(button_frame, text="✕ DELETE\n(Q)", command=self.delete_image, bg='#f44336', fg='white',
-                                    font=('Arial', 14, 'bold'), width=15, height=3, cursor='hand2', state=tk.DISABLED)
-        self.delete_btn.pack(side=tk.LEFT, padx=20)
+        self.filename_label = tk.Label(
+            file_info,
+            text="",
+            bg=self.bg_card,
+            fg=self.text_primary,
+            font=('Segoe UI', 10)
+        )
+        self.filename_label.pack(side=tk.LEFT, padx=10)
         
-        self.undo_btn = tk.Button(button_frame, text="↶ UNDO\n(Backspace)", command=self.undo_delete, bg='#FF9800', fg='white',
-                                  font=('Arial', 14, 'bold'), width=15, height=3, cursor='hand2', state=tk.DISABLED)
-        self.undo_btn.pack(side=tk.LEFT, padx=20)
+        self.filesize_label = tk.Label(
+            file_info,
+            text="",
+            bg=self.bg_card,
+            fg=self.text_secondary,
+            font=('Segoe UI', 9)
+        )
+        self.filesize_label.pack(side=tk.LEFT, padx=10)
         
-        self.keep_btn = tk.Button(button_frame, text="✓ KEEP\n(W)", command=self.keep_image, bg='#4CAF50', fg='white',
-                                  font=('Arial', 14, 'bold'), width=15, height=3, cursor='hand2', state=tk.DISABLED)
-        self.keep_btn.pack(side=tk.LEFT, padx=20)
+        # Path - make it clickable (centered)
+        path_container = tk.Frame(center_container, bg=self.bg_card)
+        path_container.pack()
         
-        tk.Label(self.root, text="Keyboard: Q = Delete | W = Keep | ← = Previous | → = Next | Backspace = Undo | Click video to play",
-                bg='#2b2b2b', fg='#888888', font=('Arial', 9)).pack(pady=5)
+        self.path_label = tk.Label(
+            path_container,
+            text="",
+            bg=self.bg_card,
+            fg=self.accent_info,
+            font=('Segoe UI', 8, 'underline'),
+            cursor='hand2'
+        )
+        self.path_label.pack()
+        self.path_label.bind('<Button-1>', self.open_folder)
+        
+        # Action buttons footer
+        footer = tk.Frame(self.root, bg=self.bg_primary, height=100)
+        footer.pack(fill=tk.X, side=tk.BOTTOM, padx=15, pady=(0, 15))
+        footer.pack_propagate(False)
+        
+        button_container = tk.Frame(footer, bg=self.bg_primary)
+        button_container.pack(expand=True)
+        
+        # Delete button - larger, more prominent
+        delete_frame = tk.Frame(button_container, bg=self.accent_danger, bd=0, 
+                               relief=tk.FLAT, highlightthickness=2, 
+                               highlightbackground='#7f1d1d')
+        delete_frame.pack(side=tk.LEFT, padx=15)
+        
+        self.delete_btn = tk.Button(
+            delete_frame,
+            text="✕  DELETE",
+            command=self.delete_image,
+            bg=self.accent_danger,
+            fg=self.text_primary,
+            font=('Segoe UI', 13, 'bold'),
+            bd=0,
+            activebackground='#dc2626',
+            activeforeground=self.text_primary,
+            cursor='hand2',
+            relief=tk.FLAT,
+            padx=35,
+            pady=18,
+            state=tk.DISABLED
+        )
+        self.delete_btn.pack(padx=3, pady=3)
+        
+        # Undo button - medium prominence
+        undo_frame = tk.Frame(button_container, bg=self.accent_warning, bd=0,
+                             relief=tk.FLAT, highlightthickness=2,
+                             highlightbackground='#78350f')
+        undo_frame.pack(side=tk.LEFT, padx=15)
+        
+        self.undo_btn = tk.Button(
+            undo_frame,
+            text="↶  UNDO",
+            command=self.undo_delete,
+            bg=self.accent_warning,
+            fg=self.text_primary,
+            font=('Segoe UI', 13, 'bold'),
+            bd=0,
+            activebackground='#f59e0b',
+            activeforeground=self.text_primary,
+            cursor='hand2',
+            relief=tk.FLAT,
+            padx=35,
+            pady=18,
+            state=tk.DISABLED
+        )
+        self.undo_btn.pack(padx=3, pady=3)
+        
+        # Add hover effects
+        def delete_enter(e):
+            if self.delete_btn['state'] != tk.DISABLED:
+                delete_frame.config(highlightbackground='#991b1b')
+                self.delete_btn.config(bg='#dc2626')
+        def delete_leave(e):
+            delete_frame.config(highlightbackground='#7f1d1d')
+            self.delete_btn.config(bg=self.accent_danger)
+        
+        def undo_enter(e):
+            if self.undo_btn['state'] != tk.DISABLED:
+                undo_frame.config(highlightbackground='#92400e')
+                self.undo_btn.config(bg='#d97706')
+        def undo_leave(e):
+            undo_frame.config(highlightbackground='#78350f')
+            self.undo_btn.config(bg=self.accent_warning)
+        
+        delete_frame.bind("<Enter>", delete_enter)
+        delete_frame.bind("<Leave>", delete_leave)
+        self.delete_btn.bind("<Enter>", delete_enter)
+        self.delete_btn.bind("<Leave>", delete_leave)
+        
+        undo_frame.bind("<Enter>", undo_enter)
+        undo_frame.bind("<Leave>", undo_leave)
+        self.undo_btn.bind("<Enter>", undo_enter)
+        self.undo_btn.bind("<Leave>", undo_leave)
+        
+        # Keyboard hints
+        hints = tk.Label(
+            footer,
+            text="← Previous  |  → Next  |  Q Delete  |  ⌫ Undo  |  Click video to play  |  Click path to open folder",
+            bg=self.bg_primary,
+            fg=self.text_muted,
+            font=('Segoe UI', 8)
+        )
+        hints.pack(side=tk.BOTTOM, pady=(10, 0))
+    
+    def create_checkbox(self, parent, text, variable, command, accent=None):
+        if accent is None:
+            accent = self.text_secondary
+        
+        cb = tk.Checkbutton(
+            parent,
+            text=text,
+            variable=variable,
+            command=command,
+            bg=self.bg_card,
+            fg=self.text_primary,
+            selectcolor=self.bg_secondary,
+            activebackground=self.bg_card,
+            activeforeground=self.text_primary,
+            font=('Segoe UI', 9),
+            cursor='hand2',
+            bd=0,
+            highlightthickness=0
+        )
+        return cb
         
     def bind_keys(self):
         self.root.bind('<Left>', lambda e: self.previous_image())
@@ -360,20 +608,17 @@ class ImageOrganizer:
                 messagebox.showerror("Error", f"Could not open video: {str(e)}")
     
     def clean_thumbnails(self):
-        """Remove orphaned thumbnails for videos that no longer exist"""
         if not self.thumbnails_dir.exists():
             messagebox.showinfo("Clean Thumbnails", "No thumbnails folder found.")
             return
         
         try:
-            # Get all thumbnail files
             thumbnail_files = list(self.thumbnails_dir.glob('*.jpg'))
             
             if not thumbnail_files:
                 messagebox.showinfo("Clean Thumbnails", "No thumbnails to clean.")
                 return
             
-            # Get all video paths from database
             conn = sqlite3.connect(self.db_path)
             cursor = conn.cursor()
             cursor.execute('SELECT filepath, thumbnail_path FROM image_cache WHERE is_video = 1')
@@ -382,11 +627,9 @@ class ImageOrganizer:
             
             orphaned = []
             for thumb_file in thumbnail_files:
-                # Check if this thumbnail belongs to an existing video
                 is_orphaned = True
                 for video_path, thumb_path in video_records:
                     if thumb_path and Path(thumb_path) == thumb_file:
-                        # Check if the video still exists
                         if Path(video_path).exists():
                             is_orphaned = False
                             break
@@ -398,7 +641,6 @@ class ImageOrganizer:
                 messagebox.showinfo("Clean Thumbnails", "No orphaned thumbnails found. All clean!")
                 return
             
-            # Ask for confirmation
             size_mb = sum(f.stat().st_size for f in orphaned) / (1024 * 1024)
             if messagebox.askyesno("Clean Thumbnails", 
                                   f"Found {len(orphaned)} orphaned thumbnail(s) ({size_mb:.1f} MB).\n\nDelete them?"):
@@ -416,7 +658,7 @@ class ImageOrganizer:
             self.processed_count = 0
             self.deleted_count = 0
             self.space_saved_mb = 0
-            self.stats_label.config(text="Processed: 0 | Deleted: 0 | Saved: 0 MB")
+            self.stats_label.config(text="Ready to organize")
             self.load_images(folder)
     
     def toggle_subdirs(self):
@@ -424,143 +666,30 @@ class ImageOrganizer:
     
     def toggle_this_day(self):
         self.on_this_day_mode = self.this_day_var.get()
-        if self.on_this_day_mode:
-            self.specific_date_mode = False  # Disable specific date mode
         if hasattr(self, 'current_folder') and self.current_folder:
             self.load_images(self.current_folder)
     
-    def pick_specific_date(self):
-        """Open a calendar date picker dialog"""
-        try:
-            from tkcalendar import Calendar
-        except ImportError:
-            messagebox.showerror("Missing Library", 
-                               "tkcalendar is not installed.\n\nInstall it with:\npip install tkcalendar\n\nFalling back to simple date picker...")
-            self.pick_specific_date_simple()
-            return
-        
-        dialog = tk.Toplevel(self.root)
-        dialog.title("Pick a Specific Date")
-        dialog.geometry("350x400")
-        dialog.configure(bg='#2b2b2b')
-        dialog.transient(self.root)
-        dialog.grab_set()
-        
-        tk.Label(dialog, text="Select Date:", bg='#2b2b2b', fg='white', font=('Arial', 12, 'bold')).pack(pady=10)
-        
-        # Calendar widget
-        cal = Calendar(dialog, selectmode='day', year=datetime.now().year, 
-                      month=datetime.now().month, day=datetime.now().day,
-                      background='#4CAF50', foreground='white', 
-                      headersbackground='#2b2b2b', headersforeground='white',
-                      selectbackground='#FF9800', selectforeground='white',
-                      weekendbackground='#3a3a3a', weekendforeground='white',
-                      othermonthbackground='#1a1a1a', othermonthforeground='#666666')
-        cal.pack(pady=20, padx=20)
-        
-        def apply_date():
-            selected = cal.get_date()
+    def open_folder(self, event=None):
+        """Open the folder containing the current file in file explorer"""
+        if self.images and self.current_index < len(self.images):
+            folder_path = self.images[self.current_index].parent
             try:
-                # Parse the date (format: m/d/yy)
-                self.target_date = datetime.strptime(selected, '%m/%d/%y')
-                self.specific_date_mode = True
-                self.on_this_day_mode = False
-                self.this_day_var.set(False)
-                dialog.destroy()
-                if hasattr(self, 'current_folder') and self.current_folder:
-                    self.load_images(self.current_folder)
-            except ValueError:
-                messagebox.showerror("Invalid Date", "Could not parse selected date")
-        
-        def clear_filter():
-            self.specific_date_mode = False
-            self.target_date = None
-            dialog.destroy()
-            if hasattr(self, 'current_folder') and self.current_folder:
-                self.load_images(self.current_folder)
-        
-        btn_frame = tk.Frame(dialog, bg='#2b2b2b')
-        btn_frame.pack(pady=15)
-        
-        tk.Button(btn_frame, text="Apply", command=apply_date, bg='#4CAF50', fg='white', 
-                 font=('Arial', 10, 'bold'), padx=20, cursor='hand2').pack(side=tk.LEFT, padx=5)
-        tk.Button(btn_frame, text="Clear Filter", command=clear_filter, bg='#f44336', fg='white',
-                 font=('Arial', 10, 'bold'), padx=20, cursor='hand2').pack(side=tk.LEFT, padx=5)
-    
-    def pick_specific_date_simple(self):
-        """Fallback simple date picker if tkcalendar is not installed"""
-        from tkinter import simpledialog
-        
-        dialog = tk.Toplevel(self.root)
-        dialog.title("Pick a Specific Date")
-        dialog.geometry("300x200")
-        dialog.configure(bg='#2b2b2b')
-        dialog.transient(self.root)
-        dialog.grab_set()
-        
-        tk.Label(dialog, text="Select Date:", bg='#2b2b2b', fg='white', font=('Arial', 12, 'bold')).pack(pady=10)
-        
-        # Year input
-        year_frame = tk.Frame(dialog, bg='#2b2b2b')
-        year_frame.pack(pady=5)
-        tk.Label(year_frame, text="Year:", bg='#2b2b2b', fg='white').pack(side=tk.LEFT, padx=5)
-        year_var = tk.StringVar(value=str(datetime.now().year))
-        year_entry = tk.Entry(year_frame, textvariable=year_var, width=10)
-        year_entry.pack(side=tk.LEFT)
-        
-        # Month input
-        month_frame = tk.Frame(dialog, bg='#2b2b2b')
-        month_frame.pack(pady=5)
-        tk.Label(month_frame, text="Month:", bg='#2b2b2b', fg='white').pack(side=tk.LEFT, padx=5)
-        month_var = tk.StringVar(value=str(datetime.now().month))
-        month_entry = tk.Entry(month_frame, textvariable=month_var, width=10)
-        month_entry.pack(side=tk.LEFT)
-        
-        # Day input
-        day_frame = tk.Frame(dialog, bg='#2b2b2b')
-        day_frame.pack(pady=5)
-        tk.Label(day_frame, text="Day:", bg='#2b2b2b', fg='white').pack(side=tk.LEFT, padx=5)
-        day_var = tk.StringVar(value=str(datetime.now().day))
-        day_entry = tk.Entry(day_frame, textvariable=day_var, width=10)
-        day_entry.pack(side=tk.LEFT)
-        
-        def apply_date():
-            try:
-                year = int(year_var.get())
-                month = int(month_var.get())
-                day = int(day_var.get())
-                self.target_date = datetime(year, month, day)
-                self.specific_date_mode = True
-                self.on_this_day_mode = False
-                self.this_day_var.set(False)
-                dialog.destroy()
-                if hasattr(self, 'current_folder') and self.current_folder:
-                    self.load_images(self.current_folder)
-            except ValueError:
-                messagebox.showerror("Invalid Date", "Please enter a valid date (YYYY-MM-DD)")
-        
-        def clear_filter():
-            self.specific_date_mode = False
-            self.target_date = None
-            dialog.destroy()
-            if hasattr(self, 'current_folder') and self.current_folder:
-                self.load_images(self.current_folder)
-        
-        btn_frame = tk.Frame(dialog, bg='#2b2b2b')
-        btn_frame.pack(pady=15)
-        
-        tk.Button(btn_frame, text="Apply", command=apply_date, bg='#4CAF50', fg='white', 
-                 font=('Arial', 10, 'bold'), padx=20, cursor='hand2').pack(side=tk.LEFT, padx=5)
-        tk.Button(btn_frame, text="Clear Filter", command=clear_filter, bg='#f44336', fg='white',
-                 font=('Arial', 10, 'bold'), padx=20, cursor='hand2').pack(side=tk.LEFT, padx=5)
+                if sys.platform == 'win32':
+                    os.startfile(str(folder_path))
+                elif sys.platform == 'darwin':
+                    subprocess.run(['open', str(folder_path)])
+                else:
+                    subprocess.run(['xdg-open', str(folder_path)])
+            except Exception as e:
+                messagebox.showerror("Error", f"Could not open folder: {str(e)}")
             
     def load_images(self, folder):
         self.current_folder = folder
         self.images = []
         path = Path(folder)
         
-        if self.on_this_day_mode:
-            self.counter_label.config(text="Scanning for 'On This Day' files...")
+        if self.on_this_day_mode or self.specific_date_mode:
+            self.counter_label.config(text="Scanning files...")
             self.root.update()
         
         all_extensions = self.image_extensions | self.video_extensions
@@ -599,29 +728,6 @@ class ImageOrganizer:
                 self.counter_label.config(text="No files loaded")
                 return
         
-        elif self.specific_date_mode and self.target_date:
-            total_files = len(self.images)
-            filtered_files = []
-            for i, file in enumerate(self.images):
-                if i % 100 == 0:
-                    self.counter_label.config(text=f"Scanning {i}/{total_files}...")
-                    self.root.update()
-                
-                file_date = self.get_cached_date(file)
-                if self.matches_specific_date(file_date, self.target_date):
-                    if file_date and file_date.tzinfo is not None:
-                        file_date = file_date.replace(tzinfo=None)
-                    filtered_files.append((file, file_date))
-            
-            filtered_files.sort(key=lambda x: x[1] if x[1] else datetime.min)
-            self.images = [file for file, date in filtered_files]
-            
-            if not self.images:
-                date_str = self.target_date.strftime('%B %d, %Y')
-                messagebox.showinfo("No Files", f"No photos or videos found from {date_str}.")
-                self.counter_label.config(text="No files loaded")
-                return
-        
         if not self.images:
             messagebox.showinfo("No Files", "No images or videos found in the selected folder.")
             return
@@ -631,8 +737,8 @@ class ImageOrganizer:
             
         self.current_index = 0
         self.show_current_image()
-        self.delete_btn.config(state=tk.NORMAL)
-        self.keep_btn.config(state=tk.NORMAL)
+        self.delete_btn.config(state=tk.NORMAL, bg=self.accent_danger)
+        self.undo_btn.config(state=tk.DISABLED, bg='#4a4a4a')
     
     def toggle_random_mode(self):
         self.random_mode = self.random_var.get()
@@ -648,7 +754,7 @@ class ImageOrganizer:
         draw = ImageDraw.Draw(img, 'RGBA')
         width, height = img.size
         
-        overlay = Image.new('RGBA', img.size, (0, 0, 0, 100))
+        overlay = Image.new('RGBA', img.size, (0, 0, 0, 120))
         img = Image.alpha_composite(img.convert('RGBA'), overlay)
         
         center_x, center_y = width // 2, height // 2
@@ -658,21 +764,22 @@ class ImageOrganizer:
         points = [(center_x - triangle_size//2, center_y - triangle_size),
                  (center_x - triangle_size//2, center_y + triangle_size),
                  (center_x + triangle_size, center_y)]
-        draw.polygon(points, fill=(255, 255, 255, 200))
+        draw.polygon(points, fill=(255, 255, 255, 220))
         
-        text = "Click to play in VLC"
-        text_x = center_x - len(text) * 3
-        text_y = center_y + triangle_size + 20
-        draw.text((text_x, text_y), text, fill=(255, 255, 255, 230))
+        text = "Click to play"
+        text_x = center_x - len(text) * 4
+        text_y = center_y + triangle_size + 30
+        draw.text((text_x, text_y), text, fill=(255, 255, 255, 250))
         
         return img.convert('RGB')
         
     def show_current_image(self):
         if not self.images or self.current_index >= len(self.images):
             messagebox.showinfo("Done!", "All files have been reviewed!")
-            self.delete_btn.config(state=tk.DISABLED)
-            self.keep_btn.config(state=tk.DISABLED)
+            self.delete_btn.config(state=tk.DISABLED, bg='#4a4a4a')
+            self.undo_btn.config(state=tk.DISABLED, bg='#4a4a4a')
             self.counter_label.config(text="All done!")
+            self.stats_label.config(text="Review complete")
             self.canvas.delete("all")
             self.path_label.config(text="")
             self.filename_label.config(text="")
@@ -701,12 +808,12 @@ class ImageOrganizer:
                     img = Image.open(thumb_path)
                     img = self.create_play_overlay(img)
                 else:
-                    img = Image.new('RGB', (800, 600), color='#1a1a1a')
+                    img = Image.new('RGB', (800, 600), color=self.bg_secondary)
                     draw = ImageDraw.Draw(img)
-                    text = "Video Preview Unavailable\nClick to play in VLC"
+                    text = "Video Preview Unavailable\nClick to play"
                     draw.text((400, 300), text, fill='white', anchor='mm')
                 
-                self.media_type_label.config(text="🎬 VIDEO (click to play)")
+                self.media_type_label.config(text="🎬 VIDEO")
             else:
                 if file_path.suffix.lower() in ['.heic', '.heif']:
                     try:
@@ -721,7 +828,7 @@ class ImageOrganizer:
                 else:
                     img = Image.open(file_path)
                 
-                self.media_type_label.config(text="📷 IMAGE")
+                self.media_type_label.config(text="📷 PHOTO")
             
             self.root.update()
             canvas_width = self.canvas.winfo_width()
@@ -749,7 +856,7 @@ class ImageOrganizer:
                 years_ago = datetime.now().year - file_date.year
                 date_text = file_date.strftime('%B %d, %Y')
                 if years_ago > 0:
-                    date_text += f" ({years_ago} year{'s' if years_ago != 1 else ''} ago)"
+                    date_text += f" • {years_ago} year{'s' if years_ago != 1 else ''} ago"
                 self.date_label.config(text=f"📅 {date_text}")
             else:
                 self.date_label.config(text="")
@@ -757,9 +864,10 @@ class ImageOrganizer:
             self.path_label.config(text=str(file_path.parent))
             self.filename_label.config(text=file_path.name)
             
-            # Show file size
             file_size = file_path.stat().st_size
-            self.filesize_label.config(text=f"Size: {self.format_file_size(file_size)}")
+            self.filesize_label.config(text=f"• {self.format_file_size(file_size)}")
+            
+            self.stats_label.config(text=f"Processed: {self.processed_count} • Deleted: {self.deleted_count} • Saved: {self.space_saved_mb:.1f} MB")
             
         except Exception as e:
             error_msg = f"Could not load file: {file_path.name}\n\nError: {str(e)}\n\nSkip to next file?"
@@ -793,11 +901,10 @@ class ImageOrganizer:
             
             self.last_deleted = file_path
             self.last_deleted_size = file_size_mb
-            self.undo_btn.config(state=tk.NORMAL)
+            self.undo_btn.config(state=tk.NORMAL, bg=self.accent_warning)
             self.deleted_count += 1
             self.processed_count += 1
             self.space_saved_mb += file_size_mb
-            self.stats_label.config(text=f"Processed: {self.processed_count} | Deleted: {self.deleted_count} | Saved: {self.space_saved_mb:.1f} MB")
             self.current_index += 1
             self.show_current_image()
         except Exception as e:
@@ -834,21 +941,21 @@ class ImageOrganizer:
             
             messagebox.showinfo("Undo", f"Restored: {self.last_deleted.name}")
             self.last_deleted = None
-            self.undo_btn.config(state=tk.DISABLED)
+            self.undo_btn.config(state=tk.DISABLED, bg='#4a4a4a')
             self.deleted_count -= 1
             self.processed_count -= 1
             self.space_saved_mb -= self.last_deleted_size
             self.last_deleted_size = 0
-            self.stats_label.config(text=f"Processed: {self.processed_count} | Deleted: {self.deleted_count} | Saved: {self.space_saved_mb:.1f} MB")
+            self.show_current_image()
         except Exception as e:
             messagebox.showerror("Error", f"Could not restore file: {str(e)}\nRestore manually from Recycle Bin.")
             
     def keep_image(self):
+        """Navigate to next image (used by arrow keys and W key for consistency)"""
         if not self.images or self.current_index >= len(self.images):
             return
             
         self.processed_count += 1
-        self.stats_label.config(text=f"Processed: {self.processed_count} | Deleted: {self.deleted_count} | Saved: {self.space_saved_mb:.1f} MB")
         self.current_index += 1
         self.show_current_image()
     
@@ -867,7 +974,6 @@ class ImageOrganizer:
         if not self.images:
             return
         self.processed_count += 1
-        self.stats_label.config(text=f"Processed: {self.processed_count} | Deleted: {self.deleted_count} | Saved: {self.space_saved_mb:.1f} MB")
         original_index = self.current_index
         while self.current_index < len(self.images) - 1:
             self.current_index += 1
