@@ -81,6 +81,7 @@ class ImageOrganizer:
         self.on_this_day_mode = False
         self.specific_date_mode = False
         self.target_date = None
+        self.viewing_date = datetime.now()  # Track which day we're viewing for "On This Day"
         self.last_deleted = None
         self.last_deleted_size = 0
         self.processed_count = 0
@@ -252,7 +253,7 @@ class ImageOrganizer:
         if file_date is None:
             return False
         if reference_date is None:
-            reference_date = datetime.now()
+            reference_date = self.viewing_date  # Use the currently selected viewing date
         return file_date.month == reference_date.month and file_date.day == reference_date.day
     
     def matches_specific_date(self, file_date, target_date):
@@ -362,6 +363,40 @@ class ImageOrganizer:
         self.create_checkbox(filter_frame, "📅 On This Day", self.this_day_var, 
                            self.toggle_this_day, self.accent_primary).pack(side=tk.LEFT, padx=8)
         
+        # Date navigation arrows (initially hidden)
+        self.date_nav_frame = tk.Frame(filter_frame, bg=self.bg_card)
+        self.date_nav_frame.pack(side=tk.LEFT, padx=5)
+        
+        self.prev_day_btn = tk.Button(
+            self.date_nav_frame,
+            text="←",
+            command=self.previous_day,
+            bg=self.bg_secondary,
+            fg=self.text_primary,
+            font=('Segoe UI', 11, 'bold'),
+            bd=0,
+            cursor='hand2',
+            width=3,
+            height=1
+        )
+        self.prev_day_btn.pack(side=tk.LEFT, padx=2)
+        
+        self.next_day_btn = tk.Button(
+            self.date_nav_frame,
+            text="→",
+            command=self.next_day,
+            bg=self.bg_secondary,
+            fg=self.text_primary,
+            font=('Segoe UI', 11, 'bold'),
+            bd=0,
+            cursor='hand2',
+            width=3,
+            height=1
+        )
+        self.next_day_btn.pack(side=tk.LEFT, padx=2)
+        
+        self.date_nav_frame.pack_forget()  # Hide initially
+        
         # Right side - counter and stats
         stats_frame = tk.Frame(control_panel, bg=self.bg_card)
         stats_frame.pack(side=tk.RIGHT, padx=20, pady=15)
@@ -383,6 +418,17 @@ class ImageOrganizer:
             font=('Segoe UI', 9)
         )
         self.stats_label.pack(side=tk.TOP, pady=(3, 0))
+        
+        # Viewing date label (shown when On This Day is active)
+        self.viewing_date_label = tk.Label(
+            control_panel,
+            text="",
+            bg=self.bg_card,
+            fg=self.text_muted,
+            font=('Segoe UI', 8, 'italic')
+        )
+        self.viewing_date_label.pack(side=tk.LEFT, padx=25)
+        self.viewing_date_label.pack_forget()  # Hide initially
         
         # Main content area
         content = tk.Frame(self.root, bg=self.bg_primary)
@@ -666,8 +712,42 @@ class ImageOrganizer:
     
     def toggle_this_day(self):
         self.on_this_day_mode = self.this_day_var.get()
+        
+        if self.on_this_day_mode:
+            # Show navigation arrows and date label
+            self.date_nav_frame.pack(side=tk.LEFT, padx=5)
+            self.viewing_date_label.pack(side=tk.LEFT, padx=25)
+            # Reset to today
+            self.viewing_date = datetime.now()
+            self.update_viewing_date_label()
+        else:
+            # Hide navigation arrows and date label
+            self.date_nav_frame.pack_forget()
+            self.viewing_date_label.pack_forget()
+        
         if hasattr(self, 'current_folder') and self.current_folder:
             self.load_images(self.current_folder)
+    
+    def previous_day(self):
+        """Navigate to previous day for On This Day"""
+        from datetime import timedelta
+        self.viewing_date = self.viewing_date - timedelta(days=1)
+        self.update_viewing_date_label()
+        if hasattr(self, 'current_folder') and self.current_folder:
+            self.load_images(self.current_folder)
+    
+    def next_day(self):
+        """Navigate to next day for On This Day"""
+        from datetime import timedelta
+        self.viewing_date = self.viewing_date + timedelta(days=1)
+        self.update_viewing_date_label()
+        if hasattr(self, 'current_folder') and self.current_folder:
+            self.load_images(self.current_folder)
+    
+    def update_viewing_date_label(self):
+        """Update the label showing which day we're viewing"""
+        date_str = self.viewing_date.strftime('%B %d, %Y')
+        self.viewing_date_label.config(text=f"Viewing memories from {date_str}")
     
     def open_folder(self, event=None):
         """Open the folder containing the current file in file explorer"""
@@ -723,8 +803,8 @@ class ImageOrganizer:
             self.images = [file for file, date in filtered_files]
             
             if not self.images:
-                today = datetime.now().strftime('%B %d')
-                messagebox.showinfo("No Memories", f"No photos or videos found from {today} in previous years.")
+                date_str = self.viewing_date.strftime('%B %d')
+                messagebox.showinfo("No Memories", f"No photos or videos found from {date_str} in previous years.")
                 self.counter_label.config(text="No files loaded")
                 return
         
