@@ -12,10 +12,24 @@ Images kept will remain untouched, images selected for deletion will be sent to 
 
 You have the option to select random images from a folder, select a specific date or utilise an 'On This Day' Feature.
 
+FEATURES:
+- Browse photos/videos one-by-one with keep/delete options
+- "On This Day" - view photos from this date in previous years
+- Date picker - view photos from a specific date
+- Video support with click-to-play in VLC
+- SQLite caching for fast scanning
+- Thumbnail cleanup for videos
+- Undo last deletion
+- Stats tracking (files processed, deleted, space saved)
+
 ##  Requirements
 
 - You must have python installed on your machine
 - The following packages must be installed for the script to work:
+
+OPTIONAL (for video support):
+
+- ffmpeg: Must be installed and added to system PATH for video thumbnails
 
 ```
 pip install Pillow pywin32 winshell pillow-heif piexif tkcalendar
@@ -39,6 +53,4 @@ This will bring up the GUI
 
 4. There is also a checkbox at the top of the application to randomise the order of photos presented for review
 
-## Notes
 
-- Now with video support!
