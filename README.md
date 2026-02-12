@@ -49,7 +49,8 @@ This will bring up the GUI
 
 3. You can now start the culling process for any images you want to delete, or keep any photos you deem worthy:
 
-<img width="1352" height="1098" alt="image" src="https://github.com/user-attachments/assets/e1c488a9-4081-4466-9a06-87599e6f3273" />
+<img width="1652" height="1248" alt="image" src="https://github.com/user-attachments/assets/91d42b36-315b-4e22-b90c-97fd1094295d" />
+
 
 4. There is also a checkbox at the top of the application to randomise the order of photos presented for review
 
