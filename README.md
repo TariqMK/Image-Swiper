@@ -1,193 +1,116 @@
 # Image Swiper
 
-A desktop app for Windows, Apple Silicon macOS and Linux for reviewing photos and videos one at a time, keeping the
-ones you want and sending unwanted files to the Recycle Bin. Built with Python,
-Tkinter, Pillow and SQLite.
+Review your photos and videos one at a time, revisit memories from the same day
+across the years, and clear out the files you no longer want.
 
-## Features
+![Image Swiper interface](docs/screenshots/Screenshot%2001.png)
 
-- Photo previews, with optional HEIC/HEIF and RAW decoding.
-- Video thumbnails through FFmpeg; centre-click opens the default video player.
-- Keyboard and canvas navigation, deletion and single-item undo.
-- Natural filename sorting, date sorting and random order.
-- Optional recursive folder scanning.
-- **On This Day:** matches month and day across all years, sorted chronologically.
-  Use the date arrows to review another day. The current year is included too.
-- File dates, sizes and session review statistics.
-- SQLite metadata caching and a tool to clean orphaned video thumbnails.
+## Download and open
 
-## Installation
+Download a build from [Releases](https://github.com/TariqMK/Image-Swiper/releases)
+for your computer:
 
-Requires Python 3.10 or later with Tkinter. Windows supports delete and in-app undo;
-macOS and Linux use native Trash with manual restoration through the file manager.
-Linux source installations may need their distribution's Tkinter package.
+| Platform | Download | Open after extracting |
+| --- | --- | --- |
+| Windows (64-bit) | `windows-x64.zip` | `ImageSwiper/ImageSwiper.exe` |
+| macOS (Apple Silicon) | `macos-arm64.zip` | `ImageSwiper.app` |
+| Linux (64-bit) | `linux-x64.tar.gz` | `ImageSwiper/ImageSwiper` |
 
-## Release builds
+Keep the extracted application and its accompanying files together. Release builds
+include Python, so you do not need to install Python separately. Intel Macs are
+not supported. Linux requires a graphical desktop; builds target Ubuntu 22.04 or
+newer compatible systems. Downloads are unsigned, and macOS builds are not
+notarized, so your system may show an application security prompt.
 
-The **Build release** GitHub Actions workflow runs manually only. Its form asks
-for **draft/public** and **major/minor/patch** before building Windows x64,
-Apple Silicon macOS (ARM64 only), and Linux x64 packages. Version allocation
-includes existing drafts and tags. The GUI shows the tagged build's version
-in muted text beside the title. See [release instructions](docs/releases.md)
-for versioning, downloads, platform requirements and failure behavior.
+For video thumbnails and original video dates, install
+[FFmpeg](https://ffmpeg.org/download.html) with `ffprobe` and make both available
+on your system's `PATH`. Without them, you can still open videos in your default
+player, but previews may be unavailable and dates use file modification times.
 
-## Running from source
+## Start reviewing
 
-From the project folder, create an environment and install the application:
+1. Choose whether to include **Subdirectories**, then click **Select Folder**.
+2. Browse in filename order, select **Sort by Date**, or enable **Random**.
+3. Keep the photos and videos you want; delete unwanted ones with **DELETE** or `Q`.
+4. Enable **On This Day** to see memories from the same month and day across all
+   years. Use the date arrows to explore another day.
 
-```powershell
-python -m venv .venv
-.venv\Scripts\python.exe -m pip install -e ".[formats]"
-.venv\Scripts\python.exe -m image_swiper
-```
+The current year is included in On This Day. Scanning runs in the background,
+with progress shown in the window. On Windows, background video tools run without
+flashing terminal windows. You can close the app during a scan to cancel it.
 
-The `formats` extra installs `pillow-heif` and `rawpy`. For basic image support,
-install with `pip install -e .` instead. Core dependencies include Pillow, piexif,
-winshell and pywin32.
+The application name is **Image Swiper**, with its build version shown beside the
+title in muted text and in the window title.
 
-For video thumbnails and creation dates, install FFmpeg and ffprobe separately
-and put both on `PATH`. Without them, videos use a placeholder preview and fall
-back to file modification dates; playback still uses the default player.
-
-The existing `Image_Swiper.bat` uses the existing `venv/` environment. The original
-`python Image_Swiper.py` command also remains available.
-
-## Usage
-
-1. Set **Subdirectories** before selecting a folder; changing this toggle affects
-   the next scan.
-2. Click **Select Folder** and choose your media folder.
-3. Browse normally, select **Sort by Date** or **Random**, or enable **On This Day**.
-4. Review files with the controls below.
+## Controls
 
 | Control | Action |
 | --- | --- |
-| `Q` / DELETE | Send the current file to the Recycle Bin or system Trash |
-| `W` | Keep the current file and advance |
-| Right arrow / right edge of preview | Next existing file |
-| Left arrow / left edge of preview | Previous existing file |
-| Backspace / UNDO | Windows: restore the most recent deletion, when available |
-| Centre of video preview | Open video in the default player |
-| Folder path | Open the containing folder in Explorer |
-| Clean | Find orphaned thumbnails and request confirmation before removing them |
+| `Q` or DELETE | Send the current file to the Recycle Bin or Trash |
+| `W` or Right arrow | Keep and move forward |
+| Left arrow | Go back to the previous available file |
+| Left/right edge of the preview | Browse backward/forward |
+| Backspace or UNDO | Windows: restore the most recent deletion, when available |
+| Centre of a video preview | Open it in your default player |
+| Folder path | Open the containing folder |
+| Clean | Remove unused video previews after confirmation |
 
-Keeping a file advances the viewer; it does not move or tag the original.
-Windows deletion uses the Recycle Bin; macOS/Linux use native Trash and require
-manual restoration through the system file manager. On Windows the app keeps one undo record, and the end-of-review
-screen disables the undo button; files can also be restored through Windows.
-The reported saved space is the size sent to the Recycle Bin, not necessarily
-reclaimed disk space. Statistics count review actions rather than unique files.
+Keeping a file leaves it where it is. Image Swiper does not move it or add tags.
 
-## Screenshots
+## Deleted files and undo
 
-Place public README screenshots in `docs/screenshots/`, for example
-`docs/screenshots/image-swiper.png`. PNG, JPG, JPEG and WebP files directly in
-that folder are allowed through `.gitignore`.
+On **Windows**, deleted files go to the Recycle Bin. Image Swiper supports undoing
+the most recent deletion while UNDO is available. The completion screen disables
+that button; you can still restore files through the Recycle Bin.
 
-Once the file exists, embed it with:
+On **macOS and Linux**, files go to the system Trash. Restore them through your
+file manager; in-app undo is unavailable on these platforms.
 
-```markdown
-![Image Swiper interface](docs/screenshots/image-swiper.png)
-```
+The space-saved figure shows the size of files sent to the Recycle Bin or Trash.
+Disk space may not be reclaimed until you empty it. Review statistics count actions,
+so revisiting a file may count it more than once.
 
-## Project structure
+## Photo and video support
 
-```text
-Image Swiper/
-|-- .github/workflows/release.yml # Manual release builds
-|-- image_swiper/
-|   |-- __main__.py       # Application entry point
-|   |-- app.py            # Review state and action coordination
-|   |-- ui.py             # Tkinter layout and bindings
-|   |-- library.py        # Scanning, filtering and sorting
-|   |-- media.py          # Decoding, previews and rendering
-|   |-- metadata.py       # Dates and formatting
-|   |-- cache.py          # SQLite cache and thumbnail cleanup
-|   |-- recycle_bin.py    # Windows deletion and restoration
-|   |-- version.py        # Version displayed in the GUI
-|   `-- paths.py          # Private runtime paths and legacy migration
-|-- data/                 # Private generated cache and thumbnails (ignored)
-|-- Meta/                 # Private historical context (ignored)
-|-- docs/
-|   |-- architecture.md
-|   `-- screenshots/      # Public documentation screenshots
-|-- tests/
-|-- scripts/              # Version allocation and packaging
-|-- Image_Swiper.py       # Compatibility launcher
-|-- Image_Swiper.bat      # Windows launcher using venv/
-|-- pyproject.toml
-`-- README.md
-```
+Image Swiper previews common image formats, including JPEG, PNG, GIF, BMP, WebP
+and TIFF, plus HEIC/HEIF and camera RAW formats such as CR2, CR3, NEF, ARW and DNG.
+Some files may depend on their camera or encoding. Large RAW previews can take
+longer to open.
 
-See [architecture notes](docs/architecture.md) for the module boundaries.
-The source code is the authority for current behavior; historical context notes
-may describe features or fixes that are absent from the current implementation.
+Video formats include MP4, MOV, AVI, MKV and others. Playback opens in your default
+player rather than inside Image Swiper.
 
-## Private data and Git
+Photo dates come from the original capture metadata when available. Video dates
+come from creation metadata when readable. Otherwise, file modification dates are
+used, which can affect which memories appear in On This Day.
 
-Source runs store generated files beside the package in:
+## Your data
 
-- `data/OnThisDay_cache.db`: media paths, dates, sizes, modification timestamps,
-  video flags and thumbnail paths.
-- `data/thumbnails/`: generated video previews.
+Image Swiper stores a local metadata cache and generated video previews to speed
+up repeat scans. Packaged apps keep these in your user account's application-data
+folder. Your original photos and videos stay in the folder you selected until you
+choose to delete them. Closing a scan keeps the cache entries already completed.
 
-At startup, existing caches and thumbnail folders are migrated from the project
-root or `Meta/` into `data/`, with the root taking priority. Cached thumbnail
-paths are updated. The historical context log stays in `Meta/Context.txt`.
-Close other app instances before migration.
+## Troubleshooting
 
-Packaged builds use private per-user application storage instead of writing inside
-the executable bundle; see [release instructions](docs/releases.md#downloads).
+- **No video preview:** check that FFmpeg and ffprobe are installed and available
+  on `PATH`. Videos can still be opened in your default player.
+- **Unexpected On This Day results:** check the file's capture date. Files without
+  readable capture metadata use their modification date.
+- **Slow first scan:** new files need their dates and previews read or generated.
+  Repeat scans reuse cached information. You can close the window during a scan.
+- **Large RAW image takes time to appear:** preview decoding can briefly delay
+  interaction while the image opens.
 
-Git ignores `data/`, `Meta/`, `private/`, `personal/`, legacy caches, databases,
-common media formats, logs, local settings, credentials and Python environments.
-Put other personal files in `private/` or `personal/`. Documentation screenshots
-are an explicit public exception. Ignore rules do not remove already tracked
-files or erase Git history.
+Reviews do not resume automatically after restarting. Rotation, favourites,
+duplicate detection and batch deletion are not currently available.
 
-## Metadata and supported media
+## For contributors
 
-Photo dates use EXIF `DateTimeOriginal` when readable. Video dates use ffprobe's
-`creation_time`. Both fall back to file modification time. Cached dates are reused
-while modification timestamps remain unchanged. Video timezone offsets are
-stripped rather than converted to local time.
-
-The scanner recognises JPEG, PNG, GIF, BMP, WebP, TIFF, HEIC/HEIF, common RAW
-extensions (CR2, CR3, NEF, ARW, DNG, ORF, RAW), ICO, JFIF and PNM-family images.
-SVG files are discovered, but the app has no SVG renderer, so they may fail to load.
-RAW and HEIC decoding depends on the optional libraries and the individual file.
-
-Video extensions include MP4, MOV, AVI, MKV, WMV, FLV, WebM, M4V, MPG, MPEG, 3GP,
-M2TS, MTS, TS, VOB and OGV. Playback compatibility depends on the external player.
-
-## Limitations and troubleshooting
-
-- Folder scans and scan-time metadata extraction run in a cancellable background
-  worker. Closing the window cancels the scan and stops running media tools.
-  Display-time image decoding still runs on the UI thread, so large RAW files can
-  temporarily delay interaction while their preview loads.
-- There is no active date picker, rotation, favourites, duplicate detection,
-  batch review or saved review position.
-- Sorting and navigation retain their existing behavior; the refactor did not
-  implement historical proposals for a unified folder-based sort.
-- If RAW or HEIC decoding fails, check that the `formats` extra is installed.
-- If video previews fail, check `ffmpeg -version` and `ffprobe -version`.
-- If dates look wrong, check the source metadata and modification dates.
-- To rebuild the cache, close the app and remove `data/OnThisDay_cache.db`.
-  Previews can also be regenerated by removing `data/thumbnails/`.
-
-## Validation
-
-```powershell
-python -B -m unittest discover -s tests -v
-```
-
-Storage tests use synthetic temporary files to check legacy migration,
-thumbnail-path updates, repeat runs, existing destinations and active-cache
-sidecars. They do not open personal media or exercise the GUI.
+See [development and maintenance](docs/development.md) for running from source,
+private-file handling and tests, [architecture](docs/architecture.md) for the code
+layout, and [release instructions](docs/releases.md) for manual GitHub builds.
 
 ## License
 
 Free to use and modify. No warranty provided.
-
-Last updated: 18 October 2026.
