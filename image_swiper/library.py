@@ -15,11 +15,30 @@ class LibraryMixin:
     def select_folder(self):
         folder = filedialog.askdirectory(title="Select folder with images and videos")
         if folder:
-            self.processed_count = 0
-            self.deleted_count = 0
-            self.space_saved_mb = 0
-            self.stats_label.config(text="Ready to organize")
-            self.load_images(folder)
+            self.open_review_folder(folder)
+
+    def select_recent_folder(self, event=None):
+        folder = self.recent_folder_var.get()
+        if folder in self.recent_folders.folders:
+            self.open_review_folder(folder)
+
+    def open_review_folder(self, folder):
+        if not Path(folder).is_dir():
+            messagebox.showwarning('Folder unavailable',
+                                   'This folder is unavailable. Connect its drive or choose another folder.')
+            return
+        try:
+            self.recent_folders.remember(folder)
+        except OSError:
+            messagebox.showwarning('Could not save recent folders',
+                                   'You can open this folder, but its location could not be saved for next time.')
+        self.recent_folder_menu.configure(values=self.recent_folders.folders, state='readonly')
+        self.recent_folder_var.set(str(Path(folder).absolute()))
+        self.processed_count = 0
+        self.deleted_count = 0
+        self.space_saved_mb = 0
+        self.stats_label.config(text="Ready to organize")
+        self.load_images(folder)
 
 
     def toggle_subdirs(self):

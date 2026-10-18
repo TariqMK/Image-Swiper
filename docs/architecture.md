@@ -12,6 +12,7 @@ preserve shared state while separating the original class into modules:
 - `metadata.py`: date extraction, matching and size formatting.
 - `cache.py`: SQLite schema, metadata cache and thumbnail cleanup.
 - `date_cache.py`: one connection per scan and short batched metadata writes.
+- `recent_folders.py`: atomic private storage of the three most recently opened folders.
 - `recycle_bin.py`: Windows delete/restore and native Trash support elsewhere.
 - `paths.py`: private runtime storage and legacy cache migration.
 
@@ -48,3 +49,10 @@ Frozen release builds use per-user application storage instead of writing inside
 the bundle. `version.py` is stamped alongside `pyproject.toml` on the release tag;
 the UI renders that version in muted header text. See [releases](releases.md)
 for the manual build workflow and platform-specific behavior.
+
+The Recent folders dropdown stores full paths in `recent_folders.json` beside
+the runtime database, inside private `data/` storage. Source runs therefore ignore
+the history through the existing `/data/` rule; packaged builds use per-user storage.
+History is deduplicated and capped at three entries. Missing drives are checked
+only when selected, and malformed history is ignored without blocking startup.
+Selecting a recent folder uses the same reset and cancellable scan as Select Folder.

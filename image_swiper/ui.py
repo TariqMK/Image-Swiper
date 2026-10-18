@@ -1,7 +1,7 @@
 """Ui operations for the desktop application."""
 
 import tkinter as tk
-from tkinter import messagebox
+from tkinter import messagebox, ttk
 import os
 import subprocess
 import sys
@@ -82,6 +82,19 @@ class UiMixin:
         self.create_modern_button(btn_frame, "🧹 Clean", self.clean_thumbnails, 
                                  self.accent_warning, 100, 40).pack(side=tk.LEFT, padx=5)
         
+        recent_bar = tk.Frame(self.root, bg=self.bg_secondary)
+        recent_bar.pack(fill=tk.X, padx=15, pady=(8, 0))
+        tk.Label(recent_bar, text='Recent folders', bg=self.bg_secondary,
+                 fg=self.text_secondary, font=('Segoe UI', 10)).pack(side=tk.LEFT, padx=(10, 12), pady=8)
+        self.recent_folder_var = tk.StringVar(value='Choose a recent folder...')
+        self.recent_folder_menu = ttk.Combobox(
+            recent_bar, textvariable=self.recent_folder_var,
+            values=self.recent_folders.folders, font=('Segoe UI', 10),
+            state='readonly' if self.recent_folders.folders else 'disabled',
+        )
+        self.recent_folder_menu.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 10), pady=8)
+        self.recent_folder_menu.bind('<<ComboboxSelected>>', self.select_recent_folder)
+
         # Control panel
         control_panel = tk.Frame(self.root, bg=self.bg_card, height=80)
         control_panel.pack(fill=tk.X, padx=15, pady=(10, 0))

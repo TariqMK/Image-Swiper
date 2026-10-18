@@ -14,6 +14,7 @@ from .metadata import MetadataMixin
 from .cache import CacheMixin
 from .library import LibraryMixin
 from .version import __version__
+from .recent_folders import RecentFolders
 
 class ImageOrganizer(UiMixin, MediaMixin, MetadataMixin, CacheMixin, LibraryMixin):
     def __init__(self, root):
@@ -62,6 +63,7 @@ class ImageOrganizer(UiMixin, MediaMixin, MetadataMixin, CacheMixin, LibraryMixi
         
         # Database setup
         self.db_path, self.thumbnails_dir = runtime_paths()
+        self.recent_folders = RecentFolders(self.db_path.parent / 'recent_folders.json')
         self.thumbnails_dir.mkdir(exist_ok=True)
         self.init_database()
         

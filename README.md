@@ -35,6 +35,11 @@ player, but previews may be unavailable and dates use file modification times.
 4. Enable **On This Day** to see memories from the same month and day across all
    years. Use the date arrows to explore another day.
 
+Image Swiper remembers your **three most recent folders** between launches.
+Choose one from **Recent folders** to open it directly. The most recently opened
+folder moves to the top; use **Select Folder** whenever you want somewhere new.
+For a folder on an external drive, connect the drive before opening it.
+
 The current year is included in On This Day. Scanning runs in the background,
 with progress shown in the window. On Windows, background video tools run without
 flashing terminal windows. You can close the app during a scan to cancel it.
