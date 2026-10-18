@@ -99,6 +99,28 @@ your account's application-data folder. Your original photos and videos stay in 
 choose to delete them. Saved scan progress is kept if you close the app; a small
 unfinished batch may need to be scanned again next time.
 
+### Windows cache and updates
+
+The Windows app keeps its files together:
+
+```text
+ImageSwiper.exe
+cache/
+  OnThisDay_cache.db      # Saved media dates and information
+  thumbnails/            # Video previews
+  recent_folders.json    # Last three selected folders
+```
+
+Keep the entire extracted application folder, including its other accompanying
+files. Choose a location you can write to, such as a folder in Documents.
+When updating, close Image Swiper and keep the `cache` folder beside the new
+executable so your cached dates, previews and recent folders remain available.
+
+**Moving from an older Windows version:** close the app, press **Win + R**, and
+open `%LOCALAPPDATA%\ImageSwiper\data\`. Copy its contents into `cache` beside
+the new `ImageSwiper.exe` before opening it. If `cache` already contains data,
+keep a backup before replacing anything. Older files are not moved automatically.
+
 ## Troubleshooting
 
 - **No video preview:** check that FFmpeg and ffprobe are installed and available
