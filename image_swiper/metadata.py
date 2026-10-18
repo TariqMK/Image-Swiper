@@ -1,7 +1,7 @@
 """Metadata operations for the desktop application."""
 
 from datetime import datetime
-import subprocess
+from .processes import run_background
 import piexif
 
 class MetadataMixin:
@@ -10,7 +10,7 @@ class MetadataMixin:
             return datetime.fromtimestamp(video_path.stat().st_mtime)
         
         try:
-            result = subprocess.run(
+            result = run_background(
                 ['ffprobe', '-v', 'quiet', '-print_format', 'json', 
                  '-show_entries', 'format_tags=creation_time', str(video_path)],
                 capture_output=True, text=True, timeout=5

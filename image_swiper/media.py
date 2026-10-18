@@ -3,8 +3,9 @@
 import tkinter as tk
 from tkinter import messagebox
 from PIL import Image, ImageTk, ImageDraw
-import subprocess
+from .processes import run_background
 from datetime import datetime
+from uuid import uuid4
 
 # Register HEIC decoding when the optional package is installed.
 try:
@@ -16,7 +17,7 @@ except Exception as exc:
 class MediaMixin:
     def check_ffmpeg(self):
         try:
-            subprocess.run(['ffmpeg', '-version'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
+            run_background(['ffmpeg', '-version'], check=True)
             return True
         except:
             return False
@@ -31,18 +32,26 @@ class MediaMixin:
         
         if thumb_path.exists():
             return thumb_path
-        
+
+        # Publish only complete previews, including when a scan is interrupted.
+        work_path = thumb_path.with_name(f'.{thumb_path.stem}.{uuid4().hex}.jpg')
         try:
-            subprocess.run(
+            run_background(
                 ['ffmpeg', '-i', str(video_path), '-ss', '00:00:01', 
-                 '-vframes', '1', '-q:v', '2', str(thumb_path)],
-                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=10, check=True
+                 '-vframes', '1', '-q:v', '2', str(work_path)],
+                timeout=10, check=True
             )
             
-            if thumb_path.exists():
+            if work_path.exists():
+                work_path.replace(thumb_path)
                 return thumb_path
         except:
             pass
+        finally:
+            try:
+                work_path.unlink(missing_ok=True)
+            except OSError:
+                pass
         
         return None
 
@@ -157,7 +166,7 @@ class MediaMixin:
                 
                 self.media_type_label.config(text="📷 PHOTO")
             
-            self.root.update()
+            self.root.update_idletasks()
             canvas_width = self.canvas.winfo_width()
             canvas_height = self.canvas.winfo_height()
             

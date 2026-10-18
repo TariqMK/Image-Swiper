@@ -162,8 +162,10 @@ M2TS, MTS, TS, VOB and OGV. Playback compatibility depends on the external playe
 
 ## Limitations and troubleshooting
 
-- Scanning, metadata extraction and decoding run on the UI thread; large libraries
-  and RAW files can make the interface temporarily unresponsive.
+- Folder scans and scan-time metadata extraction run in a cancellable background
+  worker. Closing the window cancels the scan and stops running media tools.
+  Display-time image decoding still runs on the UI thread, so large RAW files can
+  temporarily delay interaction while their preview loads.
 - There is no active date picker, rotation, favourites, duplicate detection,
   batch review or saved review position.
 - Sorting and navigation retain their existing behavior; the refactor did not

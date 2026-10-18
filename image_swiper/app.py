@@ -4,6 +4,8 @@ import tkinter as tk
 from tkinter import messagebox
 from datetime import datetime
 import sqlite3
+from queue import Queue
+from .processes import stop_background_tools
 from .paths import runtime_paths
 from .recycle_bin import CAN_RESTORE, delete_file, restore_file
 from .ui import UiMixin
@@ -16,6 +18,13 @@ from .version import __version__
 class ImageOrganizer(UiMixin, MediaMixin, MetadataMixin, CacheMixin, LibraryMixin):
     def __init__(self, root):
         self.root = root
+        self._closing = False
+        self._scan_cancel = None
+        self._scanning = False
+        self._scan_generation = 0
+        self._scan_messages = Queue()
+        self._scan_after = None
+        self.root.protocol('WM_DELETE_WINDOW', self.close)
         self.root.title(f"Memory Organizer v{__version__}")
         self.root.geometry("1100x800")
         
@@ -75,6 +84,18 @@ class ImageOrganizer(UiMixin, MediaMixin, MetadataMixin, CacheMixin, LibraryMixi
         
         self.setup_ui()
         self.bind_keys()
+        self._scan_after = self.root.after(50, self.poll_scan)
+
+    def close(self):
+        if self._closing:
+            return
+        self._closing = True
+        if self._scan_cancel is not None:
+            self._scan_cancel.set()
+        if self._scan_after is not None:
+            self.root.after_cancel(self._scan_after)
+        stop_background_tools()
+        self.root.destroy()
 
 
     def delete_image(self):

@@ -14,8 +14,13 @@ preserve shared state while separating the original class into modules:
 - `recycle_bin.py`: Windows delete/restore and native Trash support elsewhere.
 - `paths.py`: private runtime storage and legacy cache migration.
 
-Run `python -m image_swiper` or the original launcher. Scanning remains synchronous;
-the refactor preserves existing sorting and review behavior.
+Run `python -m image_swiper` or the original launcher. `scanning.py` traverses
+folders and extracts scan metadata in a daemon worker. `library.py` snapshots scan
+options and polls a result queue on the Tk thread. Cancellation events and scan
+generation IDs prevent obsolete results from updating the interface. Closing
+cancels pending work, kills managed media subprocesses and destroys the window
+without joining the worker. `processes.py` keeps those media tools console-free
+on Windows and tracks their lifetime. Preview decoding still runs on the UI thread.
 
 ## Private data
 

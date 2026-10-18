@@ -5,6 +5,10 @@ from tkinter import filedialog, messagebox
 from pathlib import Path
 from datetime import datetime
 import random
+from copy import copy
+from queue import Empty
+from threading import Event, Thread
+from .scanning import scan_library
 
 class LibraryMixin:
     def select_folder(self):
@@ -38,25 +42,8 @@ class LibraryMixin:
 
     def toggle_sort_by_date(self):
         self.sort_by_date = self.sort_by_date_var.get()
-        # Just re-sort existing images, don't re-scan
-        if self.images:
-            if self.sort_by_date:
-                file_date_pairs = []
-                for file in self.images:
-                    file_date = self.get_cached_date(file)
-                    # Strip timezone for comparison
-                    if file_date and file_date.tzinfo is not None:
-                        file_date = file_date.replace(tzinfo=None)
-                    file_date_pairs.append((file, file_date if file_date else datetime.min))
-                # Sort by date, then by natural filename
-                file_date_pairs.sort(key=lambda x: (x[1], self.natural_sort_key(x[0])))
-                self.images = [file for file, _ in file_date_pairs]
-            else:
-                # Sort by natural filename order
-                self.images.sort(key=self.natural_sort_key)
-            
-            self.current_index = 0
-            self.show_current_image()
+        if getattr(self, 'current_folder', None):
+            self.load_images(self.current_folder)
 
 
     def toggle_this_day(self):
@@ -103,96 +90,84 @@ class LibraryMixin:
 
 
     def load_images(self, folder):
+        if self._closing:
+            return
+        if self._scan_cancel is not None:
+            self._scan_cancel.set()
         self.current_folder = folder
         self.images = []
-        path = Path(folder)
-        
-        if self.on_this_day_mode or self.specific_date_mode:
-            self.counter_label.config(text="Scanning files...")
-            self.root.update()
-        
-        all_extensions = self.image_extensions | self.video_extensions
-        
-        if self.include_subdirs:
-            for ext in all_extensions:
-                self.images.extend(path.rglob(f'*{ext}'))
-                self.images.extend(path.rglob(f'*{ext.upper()}'))
-        else:
-            for ext in all_extensions:
-                self.images.extend(path.glob(f'*{ext}'))
-                self.images.extend(path.glob(f'*{ext.upper()}'))
-        
-        self.images = sorted(list(set(self.images)), key=self.natural_sort_key)
-        
-        # Sort by date taken if toggled, otherwise keep filename sort
-        if self.sort_by_date:
-            file_date_pairs = []
-            for file in self.images:
-                file_date = self.get_cached_date(file)
-                # Strip timezone for comparison
-                if file_date and file_date.tzinfo is not None:
-                    file_date = file_date.replace(tzinfo=None)
-                file_date_pairs.append((file, file_date if file_date else datetime.min))
-            # Sort by date, then by natural filename
-            file_date_pairs.sort(key=lambda x: (x[1], self.natural_sort_key(x[0])))
-            self.images = [file for file, _ in file_date_pairs]
-        
-        if self.on_this_day_mode:
-            total_files = len(self.images)
-            filtered_files = []
-            for i, file in enumerate(self.images):
-                if i % 100 == 0:
-                    self.counter_label.config(text=f"Scanning {i}/{total_files}...")
-                    self.root.update()
-                
-                file_date = self.get_cached_date(file)
-                if self.matches_this_day(file_date):
-                    if file_date and file_date.tzinfo is not None:
-                        file_date = file_date.replace(tzinfo=None)
-                    filtered_files.append((file, file_date))
-            
-            filtered_files.sort(key=lambda x: (x[1], self.natural_sort_key(x[0])))
-            self.images = [file for file, date in filtered_files]
-            
-            # DEBUG: Print filtered files to see order after On This Day sorting
-            print("\nDEBUG - Files after 'On This Day' filtering (all):")
-            for i, f in enumerate(self.images):
-                print(f"  {i+1}. {f.name}")
-            
-            if not self.images:
-                date_str = self.viewing_date.strftime('%B %d')
-                messagebox.showinfo("No Memories", f"No photos or videos found from {date_str} in previous years.")
-                self.counter_label.config(text="No files loaded")
-                return
-        
-        # Apply sort by date if toggled
-        if self.sort_by_date and self.images:
-            file_date_pairs = []
-            for file in self.images:
-                file_date = self.get_cached_date(file)
-                # Strip timezone for comparison
-                if file_date and file_date.tzinfo is not None:
-                    file_date = file_date.replace(tzinfo=None)
-                file_date_pairs.append((file, file_date if file_date else datetime.min))
-            # Sort by date, then by natural filename
-            file_date_pairs.sort(key=lambda x: (x[1], self.natural_sort_key(x[0])))
-            self.images = [file for file, _ in file_date_pairs]
-        
-        if not self.images:
-            messagebox.showinfo("No Files", "No images or videos found in the selected folder.")
-            return
-        
-        if self.random_mode and not self.on_this_day_mode:
-            random.shuffle(self.images)
-            
         self.current_index = 0
-        self.show_current_image()
-        self.delete_btn.config(state=tk.NORMAL, bg=self.accent_danger)
-        self.undo_btn.config(state=tk.DISABLED, bg='#4a4a4a')
+        self.delete_btn.config(state=tk.DISABLED)
+        self.undo_btn.config(state=tk.DISABLED)
+        self.canvas.delete("all")
+        self.counter_label.config(text="Scanning files...")
+        self._scan_cancel = Event()
+        self._scanning = True
+        self._scan_generation += 1
+        generation = self._scan_generation
+        cancel = self._scan_cancel
+        # Metadata/cache methods use a snapshot, never live UI state.
+        worker = copy(self)
+        options = dict(
+            include_subdirs=self.include_subdirs,
+            extensions=self.image_extensions | self.video_extensions,
+            sort_by_date=self.sort_by_date,
+            on_this_day=self.on_this_day_mode,
+            reference_date=self.viewing_date,
+            random_mode=self.random_mode,
+        )
+        def work():
+            try:
+                images = scan_library(folder, cancel=cancel,
+                    get_date=worker.get_cached_date, sort_key=worker.natural_sort_key,
+                    progress=lambda text: self._scan_messages.put((generation, 'progress', text)),
+                    **options)
+                if not cancel.is_set():
+                    self._scan_messages.put((generation, 'done', images))
+            except Exception as exc:
+                if not cancel.is_set():
+                    self._scan_messages.put((generation, 'error', str(exc)))
+        Thread(target=work, name='media-scan', daemon=True).start()
 
+    def poll_scan(self):
+        if self._closing:
+            return
+        # Drain only a bounded number of messages to keep event handling responsive.
+        for _ in range(100):
+            if self._closing:
+                return
+            try:
+                generation, kind, value = self._scan_messages.get_nowait()
+            except Empty:
+                break
+            if generation != self._scan_generation:
+                continue
+            if kind == 'progress':
+                self.counter_label.config(text=value)
+            elif kind == 'error':
+                self._scanning = False
+                self.counter_label.config(text="Scan failed")
+                messagebox.showerror("Scan failed", value)
+            elif kind == 'done':
+                self._scanning = False
+                self.images = value
+                if not self.images:
+                    self.counter_label.config(text="No files loaded")
+                    messagebox.showinfo("No Files", "No matching photos or videos found.")
+                else:
+                    self.current_index = 0
+                    self.show_current_image()
+                    if self._closing:
+                        return
+                    self.delete_btn.config(state=tk.NORMAL, bg=self.accent_danger)
+        if not self._closing:
+            self._scan_after = self.root.after(50, self.poll_scan)
 
     def toggle_random_mode(self):
         self.random_mode = self.random_var.get()
+        if self._scanning:
+            self.load_images(self.current_folder)
+            return
         if self.images:
             if self.random_mode:
                 random.shuffle(self.images)
