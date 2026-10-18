@@ -1,5 +1,6 @@
 # Private storage, including personal paths, dates, previews and context logs.
 /data/
+/cache/
 /Meta/
 /private/
 /personal/

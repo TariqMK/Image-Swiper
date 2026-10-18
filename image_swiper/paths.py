@@ -15,7 +15,7 @@ def runtime_paths(project_root=None):
     elif getattr(sys, 'frozen', False):
         # Bundles may be read-only or extracted into temporary directories.
         if sys.platform == 'win32':
-            root = Path(os.environ.get('LOCALAPPDATA', Path.home() / 'AppData' / 'Local')) / 'ImageSwiper'
+            root = Path(sys.executable).resolve().parent
         elif sys.platform == 'darwin':
             root = Path.home() / 'Library' / 'Application Support' / 'ImageSwiper'
         else:
@@ -23,7 +23,8 @@ def runtime_paths(project_root=None):
         root.mkdir(parents=True, exist_ok=True)
     else:
         root = PROJECT_ROOT
-    data = root / 'data'
+    portable_windows = project_root is None and getattr(sys, 'frozen', False) and sys.platform == 'win32'
+    data = root / ('cache' if portable_windows else 'data')
     data.mkdir(exist_ok=True)
     database = data / 'OnThisDay_cache.db'
     thumbnails = data / 'thumbnails'

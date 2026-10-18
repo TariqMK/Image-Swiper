@@ -81,8 +81,8 @@ root or `Meta/` into `data/`, with the root taking priority. Cached thumbnail
 paths are updated. The historical context log stays in `Meta/Context.txt`.
 Close other app instances before migration.
 
-Packaged builds use private per-user application storage instead of writing inside
-the executable bundle; see [release instructions](releases.md#downloads).
+Windows builds use `cache/` beside the executable; macOS/Linux builds use
+private per-user application storage; see [release instructions](releases.md#downloads).
 
 Git ignores `data/`, `Meta/`, `private/`, `personal/`, legacy caches, databases,
 common media formats, logs, local settings, credentials and Python environments.

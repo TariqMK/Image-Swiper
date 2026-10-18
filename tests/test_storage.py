@@ -11,15 +11,15 @@ from image_swiper.paths import runtime_paths
 
 
 class StorageTests(unittest.TestCase):
-    def test_frozen_build_uses_private_user_storage(self):
+    def test_frozen_build_storage_location(self):
         with tempfile.TemporaryDirectory() as temporary:
             base = Path(temporary)
-            with patch.object(sys, 'frozen', True, create=True), patch('pathlib.Path.home', return_value=base), patch.dict(
+            with patch.object(sys, 'frozen', True, create=True), patch.object(sys, 'executable', str(base / 'ImageSwiper.exe')), patch('pathlib.Path.home', return_value=base), patch.dict(
                 'os.environ', {'LOCALAPPDATA': str(base), 'XDG_DATA_HOME': str(base)}
             ):
                 database, thumbnails = runtime_paths()
             if sys.platform == 'win32':
-                expected = base / 'ImageSwiper' / 'data'
+                expected = base / 'cache'
             elif sys.platform == 'darwin':
                 expected = base / 'Library' / 'Application Support' / 'ImageSwiper' / 'data'
             else:

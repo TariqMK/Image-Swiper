@@ -92,8 +92,10 @@ used, which can affect which memories appear in On This Day.
 ## Your data
 
 Image Swiper stores a local metadata cache and generated video previews to speed
-up repeat scans. Packaged apps keep these in your user account's application-data
-folder. Your original photos and videos stay in the folder you selected until you
+up repeat scans. The Windows download keeps its database, video previews and
+recent folders in a **cache** folder beside `ImageSwiper.exe`. Keep the app in a
+writable folder, and preserve `cache` when updating. macOS and Linux builds use
+your account's application-data folder. Your original photos and videos stay in the folder you selected until you
 choose to delete them. Saved scan progress is kept if you close the app; a small
 unfinished batch may need to be scanned again next time.
 

@@ -59,13 +59,18 @@ Windows retains Recycle Bin undo. macOS/Linux send files to native Trash and
 require restoring them through the system file manager; in-app undo is disabled.
 Frozen applications store private data in:
 
-- Windows: `%LOCALAPPDATA%/ImageSwiper/data/`.
+- Windows: `cache/` beside `ImageSwiper.exe`. Extract the app to a writable folder.
 - macOS: `~/Library/Application Support/ImageSwiper/data/`.
 - Linux: `$XDG_DATA_HOME/image-swiper/data/`, defaulting to
   `~/.local/share/image-swiper/data/`.
 
 Source runs retain the project's ignored `data/` folder. Personal data is not
 included by the build script. Do not add private media as Python package resources.
+
+Older Windows builds used `%LOCALAPPDATA%/ImageSwiper/data/`. To reuse that cache,
+close Image Swiper and copy that folder's contents into `cache/` beside the new
+executable before launching. The old files are left untouched. Keep `cache/` when
+updating the app to retain metadata, thumbnails and recent folders.
 
 The workflow uses `GITHUB_TOKEN` with `contents: write` only in the preparation
 and release jobs. Repository tag rules must permit the release tag push; no

@@ -45,14 +45,15 @@ logs and virtual environments. Store other personal files in ignored `private/`
 or `personal/`. Do not force-add private files. Ignore rules cannot remove data
 already committed to an existing repository.
 
-Frozen release builds use per-user application storage instead of writing inside
-the bundle. `version.py` is stamped alongside `pyproject.toml` on the release tag;
+Frozen Windows builds use `cache/` beside the executable. macOS/Linux builds
+use per-user application storage instead of writing inside the bundle. `version.py` is stamped alongside `pyproject.toml` on the release tag;
 the UI renders that version in muted header text. See [releases](releases.md)
 for the manual build workflow and platform-specific behavior.
 
 The Recent folders dropdown stores full paths in `recent_folders.json` beside
 the runtime database, inside private `data/` storage. Source runs therefore ignore
-the history through the existing `/data/` rule; packaged builds use per-user storage.
+the history through the existing `/data/` rule. Windows bundles use ignored
+`cache/` beside the executable; macOS/Linux use per-user storage.
 History is deduplicated and capped at three entries. Missing drives are checked
 only when selected, and malformed history is ignored without blocking startup.
 Selecting a recent folder uses the same reset and cancellable scan as Select Folder.
