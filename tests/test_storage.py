@@ -24,8 +24,10 @@ class StorageTests(unittest.TestCase):
                 expected = base / 'Library' / 'Application Support' / 'ImageSwiper' / 'data'
             else:
                 expected = base / 'image-swiper' / 'data'
-            self.assertEqual(database.parent, expected)
-            self.assertEqual(thumbnails, expected / 'thumbnails')
+            # Windows temp paths may use an 8.3 alias (RUNNER~1), while the
+            # executable path is resolved to its long form (runneradmin).
+            self.assertEqual(database.parent.resolve(), expected.resolve())
+            self.assertEqual(thumbnails.resolve(), (expected / 'thumbnails').resolve())
 
     def test_legacy_cache_and_thumbnail_paths_migrate_and_repeat_safely(self):
         for location in ('', 'Meta'):
