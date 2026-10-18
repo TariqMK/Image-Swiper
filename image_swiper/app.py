@@ -25,7 +25,7 @@ class ImageOrganizer(UiMixin, MediaMixin, MetadataMixin, CacheMixin, LibraryMixi
         self._scan_messages = Queue()
         self._scan_after = None
         self.root.protocol('WM_DELETE_WINDOW', self.close)
-        self.root.title(f"Memory Organizer v{__version__}")
+        self.root.title(f"Image Swiper v{__version__}")
         self.root.geometry("1100x800")
         
         # Modern color scheme - dark elegant theme

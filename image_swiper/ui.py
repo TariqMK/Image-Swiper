@@ -59,7 +59,7 @@ class UiMixin:
         
         tk.Label(
             title_frame,
-            text="📸 Memory Organizer",
+            text="📸 Image Swiper",
             bg=self.bg_secondary,
             fg=self.text_primary,
             font=('Segoe UI', 18, 'bold')
