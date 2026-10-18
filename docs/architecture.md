@@ -11,6 +11,7 @@ preserve shared state while separating the original class into modules:
 - `media.py`: image decoding, video thumbnails and canvas rendering.
 - `metadata.py`: date extraction, matching and size formatting.
 - `cache.py`: SQLite schema, metadata cache and thumbnail cleanup.
+- `date_cache.py`: one connection per scan and short batched metadata writes.
 - `recycle_bin.py`: Windows delete/restore and native Trash support elsewhere.
 - `paths.py`: private runtime storage and legacy cache migration.
 
@@ -21,6 +22,15 @@ generation IDs prevent obsolete results from updating the interface. Closing
 cancels pending work, kills managed media subprocesses and destroys the window
 without joining the worker. `processes.py` keeps those media tools console-free
 on Windows and tracks their lifetime. Preview decoding still runs on the UI thread.
+
+Date scans never generate video thumbnails. The scan snapshot owns a `DateCache`
+session in its worker thread; UI calls use separate short sessions. Pending rows
+are readable immediately and flush at 100 entries or after roughly one second
+when another row is stored. No write transaction remains open during metadata
+extraction. Session exit flushes completed rows even after cancellation/errors.
+Immediate process termination can discard an unflushed batch, which is safe to
+rescan. Viewing a video generates its preview and registers the thumbnail path
+for cleanup tracking; unchanged cached dates retain existing thumbnail records.
 
 ## Private data
 

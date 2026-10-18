@@ -59,7 +59,7 @@ jobs:
           git commit -m "Release $TAG"
           git tag "$TAG"
           git push origin "refs/tags/$TAG"
-          gh release create "$TAG" --verify-tag --draft --title "Image Swiper $TAG" --generate-notes
+          gh release create "$TAG" --verify-tag --draft --prerelease=false --title "Image Swiper $TAG" --generate-notes
 
   build:
     needs: prepare
@@ -117,5 +117,5 @@ jobs:
         run: |
           gh release upload "$TAG" release-assets/* --clobber
           if [ "$RELEASE_TYPE" = public ]; then
-            gh release edit "$TAG" --draft=false --latest
+            gh release edit "$TAG" --draft=false --prerelease=false --latest
           fi

@@ -89,7 +89,8 @@ used, which can affect which memories appear in On This Day.
 Image Swiper stores a local metadata cache and generated video previews to speed
 up repeat scans. Packaged apps keep these in your user account's application-data
 folder. Your original photos and videos stay in the folder you selected until you
-choose to delete them. Closing a scan keeps the cache entries already completed.
+choose to delete them. Saved scan progress is kept if you close the app; a small
+unfinished batch may need to be scanned again next time.
 
 ## Troubleshooting
 
@@ -97,8 +98,10 @@ choose to delete them. Closing a scan keeps the cache entries already completed.
   on `PATH`. Videos can still be opened in your default player.
 - **Unexpected On This Day results:** check the file's capture date. Files without
   readable capture metadata use their modification date.
-- **Slow first scan:** new files need their dates and previews read or generated.
-  Repeat scans reuse cached information. You can close the window during a scan.
+- **Slow first scan:** new files need their dates read. Video previews are generated
+  only when you view a video, so unrelated videos do not slow down the date scan
+  with thumbnail generation. Repeat scans reuse cached dates. You can close the
+  window during a scan.
 - **Large RAW image takes time to appear:** preview decoding can briefly delay
   interaction while the image opens.
 

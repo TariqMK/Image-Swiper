@@ -32,6 +32,7 @@ class ScanningTests(unittest.TestCase):
                 on_this_day_mode=True, viewing_date=datetime(2026, 10, 18),
                 random_mode=False, get_cached_date=blocked_metadata,
                 natural_sort_key=lambda path: path.name,
+                db_path=Path(temporary) / 'cache.db',
             )
             try:
                 LibraryMixin.load_images(window, temporary)

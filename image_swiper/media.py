@@ -218,6 +218,8 @@ class MediaMixin:
             self.counter_label.config(text=f"File {self.current_index + 1} of {len(self.images)}")
             
             file_date = self.get_cached_date(file_path)
+            if self.current_file_is_video and thumb_path and thumb_path.exists():
+                self.record_thumbnail(file_path, thumb_path)
             if file_date:
                 years_ago = datetime.now().year - file_date.year
                 date_text = file_date.strftime('%B %d, %Y')

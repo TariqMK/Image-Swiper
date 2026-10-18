@@ -5,6 +5,7 @@ from datetime import datetime
 from tkinter import messagebox
 import sqlite3
 from contextlib import closing
+from .date_cache import DateCache
 
 class CacheMixin:
     def init_database(self):
@@ -36,41 +37,32 @@ class CacheMixin:
 
 
     def get_cached_date(self, file_path):
-        with closing(sqlite3.connect(self.db_path)) as conn:
-            cursor = conn.cursor()
+        session = getattr(self, '_date_cache_session', None)
+        if session is not None:
+            return self._read_cached_date(file_path, session)
+        with DateCache(self.db_path, batch_size=1) as session:
+            return self._read_cached_date(file_path, session)
 
-            cursor.execute('SELECT date_taken, last_modified FROM image_cache WHERE filepath = ?', (str(file_path),))
-            result = cursor.fetchone()
+    def _read_cached_date(self, file_path, session):
+        cancel = getattr(self, '_scan_cancel', None)
+        if cancel is not None and cancel.is_set():
+            return None
+        stat = file_path.stat()
+        result = session.lookup(file_path)
+        if result and result[1] == stat.st_mtime:
+            return datetime.fromisoformat(result[0]) if result[0] else None
+        is_video = file_path.suffix.lower() in self.video_extensions
+        # Date scans never decode or generate video previews.
+        date = self.get_video_date(file_path) if is_video else self.extract_image_date(file_path)
+        if cancel is not None and cancel.is_set():
+            return None
+        session.store(file_path, date, stat.st_size, stat.st_mtime, is_video)
+        return date
 
-            current_mtime = file_path.stat().st_mtime
-
-            if result and result[1] == current_mtime:
-                if result[0]:
-                    return datetime.fromisoformat(result[0])
-                return None
-
-            is_video = file_path.suffix.lower() in self.video_extensions
-
-            if is_video:
-                file_date = self.get_video_date(file_path)
-                thumbnail_path = self.generate_video_thumbnail(file_path)
-            else:
-                file_date = self.extract_image_date(file_path)
-                thumbnail_path = None
-
-            if getattr(self, "_scan_cancel", None) is not None and self._scan_cancel.is_set():
-                return None
-            file_size = file_path.stat().st_size
-
-            cursor.execute('''
-                INSERT OR REPLACE INTO image_cache (filepath, date_taken, file_size, last_modified, is_video, thumbnail_path)
-                VALUES (?, ?, ?, ?, ?, ?)
-            ''', (str(file_path), file_date.isoformat() if file_date else None, file_size, current_mtime,
-                  1 if is_video else 0, str(thumbnail_path) if thumbnail_path else None))
-
-            conn.commit()
-
-            return file_date
+    def record_thumbnail(self, file_path, thumbnail):
+        with closing(sqlite3.connect(self.db_path)) as connection, connection:
+            connection.execute('UPDATE image_cache SET thumbnail_path = ? WHERE filepath = ?',
+                               (str(thumbnail), str(file_path)))
 
 
     def clean_thumbnails(self):

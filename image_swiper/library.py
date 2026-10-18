@@ -9,6 +9,7 @@ from copy import copy
 from queue import Empty
 from threading import Event, Thread
 from .scanning import scan_library
+from .date_cache import DateCache
 
 class LibraryMixin:
     def select_folder(self):
@@ -118,10 +119,12 @@ class LibraryMixin:
         )
         def work():
             try:
-                images = scan_library(folder, cancel=cancel,
-                    get_date=worker.get_cached_date, sort_key=worker.natural_sort_key,
-                    progress=lambda text: self._scan_messages.put((generation, 'progress', text)),
-                    **options)
+                with DateCache(worker.db_path) as cache:
+                    worker._date_cache_session = cache
+                    images = scan_library(folder, cancel=cancel,
+                        get_date=worker.get_cached_date, sort_key=worker.natural_sort_key,
+                        progress=lambda text: self._scan_messages.put((generation, 'progress', text)),
+                        **options)
                 if not cancel.is_set():
                     self._scan_messages.put((generation, 'done', images))
             except Exception as exc:

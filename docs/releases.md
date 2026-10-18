@@ -6,6 +6,9 @@ Build release > Run workflow**, select the source branch and both required input
 - **release_type:** `draft` (default) or `public`.
 - **bump:** `major`, `minor` or `patch` (default).
 
+Pre-release status is explicitly disabled. Draft builds stay drafts; public builds
+are published as the Latest release after all builds and asset uploads succeed.
+
 There are no push, pull-request, tag or scheduled triggers. The form is the
 pre-build confirmation; the workflow does not pause for a second confirmation.
 
