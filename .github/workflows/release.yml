@@ -1,0 +1,121 @@
+name: Build release
+run-name: ${{ inputs.release_type }} release (${{ inputs.bump }})
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_type:
+        description: Create a draft or publish after all builds succeed?
+        required: true
+        type: choice
+        default: draft
+        options: [draft, public]
+      bump:
+        description: Version increment (includes existing drafts and tags)
+        required: true
+        type: choice
+        default: patch
+        options: [major, minor, patch]
+
+# Serialize version reservations and publication across manual runs.
+concurrency:
+  group: image-swiper-release
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  prepare:
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    outputs:
+      tag: ${{ steps.version.outputs.tag }}
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate release logic
+        run: python -B -m unittest discover -s tests -v
+      - name: Calculate next version, including drafts
+        id: version
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BUMP: ${{ inputs.bump }}
+        run: python scripts/release_version.py "$BUMP"
+      - name: Commit version on the release tag and reserve a draft
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add pyproject.toml image_swiper/version.py
+          git commit -m "Release $TAG"
+          git tag "$TAG"
+          git push origin "refs/tags/$TAG"
+          gh release create "$TAG" --verify-tag --draft --title "Image Swiper $TAG" --generate-notes
+
+  build:
+    needs: prepare
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: windows-2022
+            platform: windows-x64
+            architecture: x64
+          - runner: macos-15
+            platform: macos-arm64
+            architecture: arm64
+          - runner: ubuntu-22.04
+            platform: linux-x64
+            architecture: x64
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.prepare.outputs.tag }}
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          architecture: ${{ matrix.architecture }}
+      - name: Install dependencies
+        run: python -m pip install ".[formats]" "pyinstaller>=6.12,<7"
+      - name: Test
+        run: python -B -m unittest discover -s tests -v
+      - name: Build and smoke-test application
+        run: python scripts/build.py --platform ${{ matrix.platform }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.platform }}
+          path: release-assets/*
+          if-no-files-found: error
+
+  release:
+    needs: [prepare, build]
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: release-assets
+          merge-multiple: true
+      - name: Attach builds and optionally publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          TAG: ${{ needs.prepare.outputs.tag }}
+          RELEASE_TYPE: ${{ inputs.release_type }}
+        run: |
+          gh release upload "$TAG" release-assets/* --clobber
+          if [ "$RELEASE_TYPE" = public ]; then
+            gh release edit "$TAG" --draft=false --latest
+          fi

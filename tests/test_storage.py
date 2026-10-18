@@ -2,13 +2,31 @@ from contextlib import closing
 """Exercise storage migration using synthetic files, never personal media."""
 from pathlib import Path
 import sqlite3
+import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 
 from image_swiper.paths import runtime_paths
 
 
 class StorageTests(unittest.TestCase):
+    def test_frozen_build_uses_private_user_storage(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            base = Path(temporary)
+            with patch.object(sys, 'frozen', True, create=True), patch('pathlib.Path.home', return_value=base), patch.dict(
+                'os.environ', {'LOCALAPPDATA': str(base), 'XDG_DATA_HOME': str(base)}
+            ):
+                database, thumbnails = runtime_paths()
+            if sys.platform == 'win32':
+                expected = base / 'ImageSwiper' / 'data'
+            elif sys.platform == 'darwin':
+                expected = base / 'Library' / 'Application Support' / 'ImageSwiper' / 'data'
+            else:
+                expected = base / 'image-swiper' / 'data'
+            self.assertEqual(database.parent, expected)
+            self.assertEqual(thumbnails, expected / 'thumbnails')
+
     def test_legacy_cache_and_thumbnail_paths_migrate_and_repeat_safely(self):
         for location in ('', 'Meta'):
             with self.subTest(location=location), tempfile.TemporaryDirectory() as temporary:

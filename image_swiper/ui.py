@@ -5,6 +5,7 @@ from tkinter import messagebox
 import os
 import subprocess
 import sys
+from .version import __version__
 
 class UiMixin:
     def create_modern_button(self, parent, text, command, bg_color, width=140, height=50):
@@ -64,6 +65,14 @@ class UiMixin:
             font=('Segoe UI', 18, 'bold')
         ).pack(side=tk.LEFT)
         
+        tk.Label(
+            title_frame,
+            text=f"v{__version__}",
+            bg=self.bg_secondary,
+            fg=self.text_muted,
+            font=('Segoe UI', 10)
+        ).pack(side=tk.LEFT, padx=(12, 0))
+
         # Action buttons in header
         btn_frame = tk.Frame(header, bg=self.bg_secondary)
         btn_frame.pack(side=tk.RIGHT, padx=20)

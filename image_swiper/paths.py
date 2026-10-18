@@ -1,14 +1,28 @@
-from contextlib import closing
 """Private runtime storage, independent of the current working directory."""
+from contextlib import closing
 from pathlib import Path
+import os
 import shutil
 import sqlite3
+import sys
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 
 def runtime_paths(project_root=None):
-    root = Path(project_root) if project_root is not None else PROJECT_ROOT
+    if project_root is not None:
+        root = Path(project_root)
+    elif getattr(sys, 'frozen', False):
+        # Bundles may be read-only or extracted into temporary directories.
+        if sys.platform == 'win32':
+            root = Path(os.environ.get('LOCALAPPDATA', Path.home() / 'AppData' / 'Local')) / 'ImageSwiper'
+        elif sys.platform == 'darwin':
+            root = Path.home() / 'Library' / 'Application Support' / 'ImageSwiper'
+        else:
+            root = Path(os.environ.get('XDG_DATA_HOME', Path.home() / '.local' / 'share')) / 'image-swiper'
+        root.mkdir(parents=True, exist_ok=True)
+    else:
+        root = PROJECT_ROOT
     data = root / 'data'
     data.mkdir(exist_ok=True)
     database = data / 'OnThisDay_cache.db'

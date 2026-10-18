@@ -5,17 +5,18 @@ from tkinter import messagebox
 from datetime import datetime
 import sqlite3
 from .paths import runtime_paths
-from .recycle_bin import delete_file, restore_file
+from .recycle_bin import CAN_RESTORE, delete_file, restore_file
 from .ui import UiMixin
 from .media import MediaMixin
 from .metadata import MetadataMixin
 from .cache import CacheMixin
 from .library import LibraryMixin
+from .version import __version__
 
 class ImageOrganizer(UiMixin, MediaMixin, MetadataMixin, CacheMixin, LibraryMixin):
     def __init__(self, root):
         self.root = root
-        self.root.title("Memory Organizer")
+        self.root.title(f"Memory Organizer v{__version__}")
         self.root.geometry("1100x800")
         
         # Modern color scheme - dark elegant theme
@@ -96,7 +97,8 @@ class ImageOrganizer(UiMixin, MediaMixin, MetadataMixin, CacheMixin, LibraryMixi
             
             self.last_deleted = file_path
             self.last_deleted_size = file_size_mb
-            self.undo_btn.config(state=tk.NORMAL, bg=self.accent_warning)
+            if CAN_RESTORE:
+                self.undo_btn.config(state=tk.NORMAL, bg=self.accent_warning)
             self.deleted_count += 1
             self.processed_count += 1
             self.space_saved_mb += file_size_mb
@@ -107,6 +109,8 @@ class ImageOrganizer(UiMixin, MediaMixin, MetadataMixin, CacheMixin, LibraryMixi
 
 
     def undo_delete(self):
+        if not CAN_RESTORE:
+            return
         if not self.last_deleted:
             return
         
