@@ -24,6 +24,7 @@ OnThisDay_thumbnails/
 Context.txt
 *.local.*
 .aws/
+Image_Swiper.bat
 
 # Personal media, including uppercase extensions.
 *.[jJ][pP][gG]
