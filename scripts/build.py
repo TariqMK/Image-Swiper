@@ -21,6 +21,11 @@ def main():
     command = [sys.executable, '-m', 'PyInstaller', '--noconfirm', '--clean',
                '--onedir', '--windowed', '--name', 'ImageSwiper',
                '--collect-all', 'pillow_heif', '--collect-all', 'rawpy']
+    assets = ROOT / 'docs' / 'assets'
+    icon = assets / ('image-swiper-icon-v2.ico' if sys.platform == 'win32' else 'image-swiper-icon-v2.png')
+    # Pillow lets PyInstaller convert the PNG to an ICNS for the macOS bundle.
+    command += ['--icon', str(icon), '--add-data',
+                f'{assets / "image-swiper-icon-v2.png"}{os.pathsep}docs/assets']
     if sys.platform == 'darwin':
         command += ['--target-architecture', 'arm64', '--osx-bundle-identifier', 'app.imageswiper.desktop']
     command += [str(ROOT / 'Image_Swiper.py')]

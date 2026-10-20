@@ -1,3 +1,5 @@
+![Image Swiper](docs/assets/image-swiper-banner-v2.svg)
+
 # Image Swiper
 
 Review your photos and videos one at a time, revisit memories from the same day

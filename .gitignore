@@ -70,6 +70,10 @@ Context.txt
 !/docs/screenshots/*.[jJ][pP][eE][gG]
 !/docs/screenshots/*.[wW][eE][bB][pP]
 
+# Public application icons and README banners.
+!/docs/assets/
+!/docs/assets/**
+
 # Local Python environment and tooling.
 venv/
 .venv/
