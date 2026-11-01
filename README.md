@@ -2,155 +2,172 @@
 
 # Image Swiper
 
-Review your photos and videos one at a time, revisit memories from the same day
-across the years, and clear out the files you no longer want.
+Go through a folder of photos and videos one at a time, keep what you want and
+send the rest to the Recycle Bin. Turn on **On This Day** to see what you took on
+today's date in every past year.
 
 ![Image Swiper interface](docs/screenshots/Screenshot%2001.png)
 
-## Download and open
+## Download
 
-Download a build from [Releases](https://github.com/TariqMK/Image-Swiper/releases)
-for your computer:
+Get the latest version from
+[Releases](https://github.com/TariqMK/Image-Swiper/releases). Under **Assets**,
+download the file for your computer:
 
-| Platform | Download | Open after extracting |
+| Your computer | Download | Then open |
 | --- | --- | --- |
 | Windows (64-bit) | `windows-x64.zip` | `ImageSwiper/ImageSwiper.exe` |
-| macOS (Apple Silicon) | `macos-arm64.zip` | `ImageSwiper.app` |
+| Mac with Apple silicon (M1 or later) | `macos-arm64.zip` | `ImageSwiper.app` |
 | Linux (64-bit) | `linux-x64.tar.gz` | `ImageSwiper/ImageSwiper` |
 
-Keep the extracted application and its accompanying files together. Release builds
-include Python, so you do not need to install Python separately. Intel Macs are
-not supported. Linux requires a graphical desktop; builds target Ubuntu 22.04 or
-newer compatible systems. Downloads are unsigned, and macOS builds are not
-notarized, so your system may show an application security prompt.
+Extract the download to a folder you can write to, such as Documents, and keep
+everything inside it together. You don't need to install Python or anything else
+to run it. Intel Macs aren't supported. On Linux you need a desktop environment;
+Ubuntu 22.04 or newer is supported.
 
-For video thumbnails and original video dates, install
-[FFmpeg](https://ffmpeg.org/download.html) with `ffprobe` and make both available
-on your system's `PATH`. Without them, you can still open videos in your default
-player, but previews may be unavailable and dates use file modification times.
+### First launch
 
-## Start reviewing
+Image Swiper isn't signed, so your computer may warn you the first time:
 
-1. Choose whether to include **Subfolders**, then click **Open Folder…** (`Ctrl+O`,
-   or `Cmd+O` on macOS).
-2. Choose an order in the toolbar: **Name**, **Date** or **Shuffle**.
-3. Press **Keep** (`W`) for the photos and videos you want and **Delete** (`Q`) for
-   the rest.
-4. Turn on **On This Day** to see memories from the same month and day across all
-   years. Use the arrows beside it to explore another day.
+- **Windows:** if SmartScreen says it protected your PC, click **More info**, then
+  **Run anyway**.
+- **macOS:** if the app won't open, go to **System Settings › Privacy & Security**,
+  scroll down and click **Open Anyway** next to Image Swiper.
 
-The strip under the preview shows every file in the folder: reviewed files are
-grey, deleted files are red and the current file is teal. Click the strip to jump
-to a file.
+### Optional: video previews
 
-Image Swiper remembers your **three most recent folders** between launches.
-Choose one from the arrow beside **Open Folder…** to open it directly. The most
-recently opened folder moves to the top.
-For a folder on an external drive, connect the drive before opening it.
+To see video thumbnails and use the date a video was recorded, install
+[FFmpeg](https://ffmpeg.org/download.html) so that `ffmpeg` and `ffprobe` are on
+your system `PATH`. On Windows, `winget install ffmpeg` does this. Without FFmpeg
+you can still review videos and open them in your usual player.
 
-The current year is included in On This Day. Scanning runs in the background,
-with progress shown in the window. On Windows, background video tools run without
-flashing terminal windows. You can close the app during a scan to cancel it.
+## Reviewing a folder
 
-The application name is **Image Swiper**, with its build version shown beside the
-title in muted text and in the window title.
+1. Click **Open Folder…** (`Ctrl+O`, or `Cmd+O` on a Mac) and pick a folder. Leave
+   **Subfolders** on to include every folder inside it.
+2. Each photo or video appears in turn. Press **Keep** (`W`) to move on, or
+   **Delete** (`Q`) to send it to the Recycle Bin.
+3. Changed your mind? **Undo** (`Ctrl+Z` or Backspace) brings back the last file
+   you deleted and shows it again. Undo is available on Windows.
+4. When you reach the end you'll see how many files you reviewed and how much
+   space you freed.
 
-## Controls
+Under each photo you'll see the date it was taken, how many years ago that was,
+its name, size and folder. Click the folder to open it in Explorer or Finder.
 
-| Control | Action |
+The strip under the photo shows the whole folder, one block per file: grey for
+files you've passed, red for files you deleted, and teal for where you are now.
+Click anywhere on the strip to jump there.
+
+### Order
+
+Use **Name**, **Date** or **Shuffle** in the toolbar to choose the order. Name
+sorts numbers naturally, so `IMG_9` comes before `IMG_10`.
+
+### On This Day
+
+Turn on **On This Day** to see only photos and videos taken on today's date, in
+any year, including this one. Use the arrows beside it to go back or forward a
+day, for example to catch up on days you missed.
+
+### Recent folders
+
+Click the arrow beside **Open Folder…** to reopen one of your last three folders.
+If a folder is on an external drive, connect the drive first.
+
+## Keyboard shortcuts
+
+| Key | Action |
 | --- | --- |
-| `Q` or Delete | Send the current file to the Recycle Bin or Trash |
-| `W` or Keep | Keep and move forward |
-| Right arrow | Move forward |
-| Left arrow | Go back to the previous available file |
-| Left/right edge of the preview | Browse backward/forward |
-| Backspace, `Ctrl+Z` or Undo | Windows: restore the most recent deletion and return to it |
-| Centre of a video preview | Open it in your default player |
-| Folder path | Open the containing folder |
-| `…` › Clear Thumbnail Cache… | Remove unused video previews after confirmation |
+| `W` | Keep and move to the next file |
+| `Q` | Delete (send to the Recycle Bin or Trash) |
+| `Ctrl+Z` or Backspace | Undo the last delete (Windows) |
+| Right arrow | Next file |
+| Left arrow | Previous file |
+| `Ctrl+O` | Open a folder |
 
-Keeping a file leaves it where it is. Image Swiper does not move it or add tags.
+On a Mac, use `Cmd` instead of `Ctrl`. With the mouse, you can also click the left
+or right edge of the photo to go back or forward, and click a video to play it in
+your default player.
 
-## Deleted files and undo
+## Deleting safely
 
-On **Windows**, deleted files go to the Recycle Bin. Image Swiper supports undoing
-the most recent deletion while **Undo** is available, including from the
-completion screen. You can also restore files through the Recycle Bin.
+Image Swiper only deletes a file when you press **Delete** or `Q`. Keeping,
+browsing, changing the order and On This Day never change your files, and kept
+files stay exactly where they are.
 
-On **macOS and Linux**, files go to the system Trash. Restore them through your
-file manager; in-app undo is unavailable on these platforms.
+- **Windows:** deleted files go to the Recycle Bin. Undo restores the most recent
+  one; restore older ones from the Recycle Bin.
+- **macOS and Linux:** deleted files go to the Trash. Restore them from the Trash;
+  Undo isn't available on these systems.
 
-The space-saved figure shows the size of files sent to the Recycle Bin or Trash.
-Disk space may not be reclaimed until you empty it. Review statistics count actions,
-so revisiting a file may count it more than once.
+There is no "are you sure?" prompt, so one press of `Q` sends a file to the bin.
+Network drives and some USB drives don't have a Recycle Bin, so files deleted
+there may be removed permanently. For your first session, try a copy of a folder
+on your computer's own drive.
 
-## Photo and video support
+The space freed is the size of the files you've sent to the bin. You'll get that
+space back once you empty the Recycle Bin or Trash.
 
-Image Swiper previews common image formats, including JPEG, PNG, GIF, BMP, WebP
-and TIFF, plus HEIC/HEIF and camera RAW formats such as CR2, CR3, NEF, ARW and DNG.
-Some files may depend on their camera or encoding. Large RAW previews can take
-longer to open.
+## Supported files
 
-Video formats include MP4, MOV, AVI, MKV and others. Playback opens in your default
-player rather than inside Image Swiper.
+- **Photos:** JPEG, PNG, GIF, BMP, WebP, TIFF, HEIC/HEIF and camera RAW files such
+  as CR2, CR3, NEF, ARW, DNG and ORF. Large RAW files can take a moment to appear.
+- **Videos:** MP4, MOV, AVI, MKV, WMV, WebM, M4V, 3GP, MTS and more. Videos play
+  in your default player, not inside Image Swiper.
 
-Photo dates come from the original capture metadata when available. Video dates
-come from creation metadata when readable. Otherwise, file modification dates are
-used, which can affect which memories appear in On This Day.
+Dates come from the photo's or video's own capture information. If a file has
+none, Image Swiper uses the date the file was last modified, which can put it on
+the wrong day in On This Day.
+
+## Updating
+
+Download the new version and extract it. On Windows, copy the `cache` folder from
+your old Image Swiper folder into the new one, beside `ImageSwiper.exe`. This keeps
+your saved dates, video previews and recent folders. On macOS and Linux, your saved
+data carries over automatically.
+
+<details>
+<summary>Upgrading on Windows from a version that stored data in AppData</summary>
+
+Close Image Swiper, press **Win + R**, and open
+`%LOCALAPPDATA%\ImageSwiper\data\`. Copy everything in it into the `cache` folder
+beside the new `ImageSwiper.exe`, then open the app. If `cache` already has files
+in it, back them up first. Nothing is moved automatically.
+
+</details>
 
 ## Your data
 
-Image Swiper stores a local metadata cache and generated video previews to speed
-up repeat scans. The Windows download keeps its database, video previews and
-recent folders in a **cache** folder beside `ImageSwiper.exe`. Keep the app in a
-writable folder, and preserve `cache` when updating. macOS and Linux builds use
-your account's application-data folder. Your original photos and videos stay in the folder you selected until you
-choose to delete them. Saved scan progress is kept if you close the app; a small
-unfinished batch may need to be scanned again next time.
+Image Swiper runs entirely on your computer and doesn't connect to the internet.
+To make repeat visits fast, it saves file dates, video previews and your last three
+folders:
 
-### Windows cache and updates
+- **Windows:** in a `cache` folder beside `ImageSwiper.exe`
+- **macOS and Linux:** in your account's application data folder
 
-The Windows app keeps its files together:
-
-```text
-ImageSwiper.exe
-cache/
-  OnThisDay_cache.db      # Saved media dates and information
-  thumbnails/            # Video previews
-  recent_folders.json    # Last three selected folders
-```
-
-Keep the entire extracted application folder, including its other accompanying
-files. Choose a location you can write to, such as a folder in Documents.
-When updating, close Image Swiper and keep the `cache` folder beside the new
-executable so your cached dates, previews and recent folders remain available.
-
-**Moving from an older Windows version:** close the app, press **Win + R**, and
-open `%LOCALAPPDATA%\ImageSwiper\data\`. Copy its contents into `cache` beside
-the new `ImageSwiper.exe` before opening it. If `cache` already contains data,
-keep a backup before replacing anything. Older files are not moved automatically.
+It never writes anything into your photo folders. To clear out previews of videos
+you've since deleted, use **…** › **Clear Thumbnail Cache…** in the toolbar.
 
 ## Troubleshooting
 
-- **No video preview:** check that FFmpeg and ffprobe are installed and available
-  on `PATH`. Videos can still be opened in your default player.
-- **Unexpected On This Day results:** check the file's capture date. Files without
-  readable capture metadata use their modification date.
-- **Slow first scan:** new files need their dates read. Video previews are generated
-  only when you view a video, so unrelated videos do not slow down the date scan
-  with thumbnail generation. Repeat scans reuse cached dates. You can close the
-  window during a scan.
-- **Large RAW image takes time to appear:** preview decoding can briefly delay
-  interaction while the image opens.
+- **The first scan is slow:** Image Swiper reads the date of every new file once.
+  Next time the same folder opens much faster. You can close the app mid-scan.
+- **Videos show "Preview unavailable":** install FFmpeg (see above). You can still
+  click to play them.
+- **A photo appears on the wrong day:** it probably has no capture date, so its
+  file date was used instead.
+- **Windows warns that the app is unsafe:** see [First launch](#first-launch).
 
-Reviews do not resume automatically after restarting. Rotation, favourites,
-duplicate detection and batch deletion are not currently available.
+Image Swiper starts from the beginning of the folder each time; it doesn't remember
+where you stopped. Rotating photos, favourites and finding duplicates aren't
+available yet.
 
 ## For contributors
 
-See [development and maintenance](docs/development.md) for running from source,
-private-file handling and tests, [architecture](docs/architecture.md) for the code
-layout, and [release instructions](docs/releases.md) for manual GitHub builds.
+See [development](docs/development.md) for running from source and tests,
+[architecture](docs/architecture.md) for how the code is organised, and
+[releases](docs/releases.md) for building a release.
 
 ## License
 
