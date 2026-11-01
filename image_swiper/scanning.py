@@ -21,7 +21,7 @@ def scan_library(folder, *, cancel, extensions, include_subdirs, get_date,
             path = Path(directory) / name
             if path.suffix.lower() in extensions:
                 images.append(path)
-        progress(f"Finding files... {len(images)} found")
+        progress(f"Found {len(images):,} files")
     if cancel.is_set():
         return []
     images.sort(key=sort_key)
@@ -31,7 +31,7 @@ def scan_library(folder, *, cancel, extensions, include_subdirs, get_date,
             if cancel.is_set():
                 return []
             if i % 10 == 0:
-                progress(f"Scanning {i}/{len(images)}...")
+                progress(f"Reading dates  {i:,} / {len(images):,}")
             date = get_date(path)
             if cancel.is_set():
                 return []

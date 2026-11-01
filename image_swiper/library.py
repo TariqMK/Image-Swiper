@@ -4,7 +4,6 @@ import tkinter as tk
 from tkinter import filedialog, messagebox
 from pathlib import Path
 from datetime import datetime
-import random
 from copy import copy
 from queue import Empty
 from threading import Event, Thread
@@ -17,8 +16,7 @@ class LibraryMixin:
         if folder:
             self.open_review_folder(folder)
 
-    def select_recent_folder(self, event=None):
-        folder = self.recent_folder_var.get()
+    def select_recent_folder(self, folder):
         if folder in self.recent_folders.folders:
             self.open_review_folder(folder)
 
@@ -32,17 +30,15 @@ class LibraryMixin:
         except OSError:
             messagebox.showwarning('Could not save recent folders',
                                    'You can open this folder, but its location could not be saved for next time.')
-        self.recent_folder_menu.configure(values=self.recent_folders.folders, state='readonly')
-        self.recent_folder_var.set(str(Path(folder).absolute()))
         self.processed_count = 0
         self.deleted_count = 0
         self.space_saved_mb = 0
-        self.stats_label.config(text="Ready to organize")
         self.load_images(folder)
 
 
     def toggle_subdirs(self):
         self.include_subdirs = self.subdirs_var.get()
+        self.subdirs_switch.redraw()
 
 
     def natural_sort_key(self, path):
@@ -60,26 +56,28 @@ class LibraryMixin:
         return result
 
 
-    def toggle_sort_by_date(self):
-        self.sort_by_date = self.sort_by_date_var.get()
+    def set_order(self, order):
+        """Order files by name, by date taken, or shuffled."""
+        self.order_var.set(order)
+        self.order_control.set_value(order)
+        self.sort_by_date = order == 'date'
+        self.random_mode = order == 'shuffle'
         if getattr(self, 'current_folder', None):
             self.load_images(self.current_folder)
 
 
     def toggle_this_day(self):
         self.on_this_day_mode = self.this_day_var.get()
+        self.this_day_switch.redraw()
         
         if self.on_this_day_mode:
-            # Show navigation arrows and date label
-            self.date_nav_frame.pack(side=tk.LEFT, padx=5)
-            self.viewing_date_label.pack(side=tk.LEFT, padx=25)
+            # Show the day stepper beside the switch
+            self.date_nav_frame.pack(side=tk.LEFT, padx=(self.theme.px(8), 0))
             # Reset to today
             self.viewing_date = datetime.now()
             self.update_viewing_date_label()
         else:
-            # Hide navigation arrows and date label
             self.date_nav_frame.pack_forget()
-            self.viewing_date_label.pack_forget()
         
         if hasattr(self, 'current_folder') and self.current_folder:
             self.load_images(self.current_folder)
@@ -105,8 +103,7 @@ class LibraryMixin:
 
     def update_viewing_date_label(self):
         """Update the label showing which day we're viewing"""
-        date_str = self.viewing_date.strftime('%B %d, %Y')
-        self.viewing_date_label.config(text=f"Viewing memories from {date_str}")
+        self.viewing_date_label.config(text=f"{self.viewing_date.day} {self.viewing_date:%b}")
 
 
     def load_images(self, folder):
@@ -117,10 +114,13 @@ class LibraryMixin:
         self.current_folder = folder
         self.images = []
         self.current_index = 0
-        self.delete_btn.config(state=tk.DISABLED)
-        self.undo_btn.config(state=tk.DISABLED)
-        self.canvas.delete("all")
-        self.counter_label.config(text="Scanning files...")
+        self.deleted_indices = set()
+        self.last_deleted_index = None
+        self.set_review_enabled(False)
+        self.undo_btn.set_enabled(False)
+        self.clear_caption()
+        self.update_stats()
+        self.set_canvas_message(f'Scanning {Path(folder).name or folder}', 'Finding photos and videos…')
         self._scan_cancel = Event()
         self._scanning = True
         self._scan_generation += 1
@@ -165,37 +165,32 @@ class LibraryMixin:
             if generation != self._scan_generation:
                 continue
             if kind == 'progress':
-                self.counter_label.config(text=value)
+                title = self._canvas_message[0] if self._canvas_message else 'Scanning'
+                self.set_canvas_message(title, value)
             elif kind == 'error':
                 self._scanning = False
-                self.counter_label.config(text="Scan failed")
-                messagebox.showerror("Scan failed", value)
+                self.set_canvas_message('Scan failed', value, action=True)
             elif kind == 'done':
                 self._scanning = False
                 self.images = value
                 if not self.images:
-                    self.counter_label.config(text="No files loaded")
-                    messagebox.showinfo("No Files", "No matching photos or videos found.")
+                    self.update_stats()
+                    self.show_empty_folder()
                 else:
                     self.current_index = 0
+                    self.set_review_enabled(True)
                     self.show_current_image()
                     if self._closing:
                         return
-                    self.delete_btn.config(state=tk.NORMAL, bg=self.accent_danger)
         if not self._closing:
             self._scan_after = self.root.after(50, self.poll_scan)
 
-    def toggle_random_mode(self):
-        self.random_mode = self.random_var.get()
-        if self._scanning:
-            self.load_images(self.current_folder)
-            return
-        if self.images:
-            if self.random_mode:
-                random.shuffle(self.images)
-            else:
-                self.images = sorted(self.images)
-            self.current_index = 0
-            self.show_current_image()
-
-
+    def show_empty_folder(self):
+        if self.on_this_day_mode:
+            day = f"{self.viewing_date.day} {self.viewing_date:%B}"
+            self.set_canvas_message(f'Nothing from {day}',
+                                    'No photos or videos from this day in any year. '
+                                    'Try another day with the arrows beside On This Day.')
+        else:
+            hint = 'Choose another folder.' if self.include_subdirs else                 'Turn on Subfolders to look inside folders within this one, or choose another folder.'
+            self.set_canvas_message('No photos or videos here', hint, action=True)

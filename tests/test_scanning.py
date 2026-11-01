@@ -26,8 +26,9 @@ class ScanningTests(unittest.TestCase):
             (Path(temporary) / 'example.jpg').touch()
             window = SimpleNamespace(
                 _closing=False, _scan_cancel=None, _scan_generation=0,
-                _scan_messages=Queue(), delete_btn=Mock(), undo_btn=Mock(),
-                canvas=Mock(), counter_label=Mock(), include_subdirs=True,
+                _scan_messages=Queue(), undo_btn=Mock(), set_review_enabled=Mock(),
+                clear_caption=Mock(), update_stats=Mock(), set_canvas_message=Mock(),
+                include_subdirs=True,
                 image_extensions={'.jpg'}, video_extensions=set(), sort_by_date=False,
                 on_this_day_mode=True, viewing_date=datetime(2026, 10, 18),
                 random_mode=False, get_cached_date=blocked_metadata,

@@ -31,15 +31,21 @@ player, but previews may be unavailable and dates use file modification times.
 
 ## Start reviewing
 
-1. Choose whether to include **Subdirectories**, then click **Select Folder**.
-2. Browse in filename order, select **Sort by Date**, or enable **Random**.
-3. Keep the photos and videos you want; delete unwanted ones with **DELETE** or `Q`.
-4. Enable **On This Day** to see memories from the same month and day across all
-   years. Use the date arrows to explore another day.
+1. Choose whether to include **Subfolders**, then click **Open Folder…** (`Ctrl+O`,
+   or `Cmd+O` on macOS).
+2. Choose an order in the toolbar: **Name**, **Date** or **Shuffle**.
+3. Press **Keep** (`W`) for the photos and videos you want and **Delete** (`Q`) for
+   the rest.
+4. Turn on **On This Day** to see memories from the same month and day across all
+   years. Use the arrows beside it to explore another day.
+
+The strip under the preview shows every file in the folder: reviewed files are
+grey, deleted files are red and the current file is teal. Click the strip to jump
+to a file.
 
 Image Swiper remembers your **three most recent folders** between launches.
-Choose one from **Recent folders** to open it directly. The most recently opened
-folder moves to the top; use **Select Folder** whenever you want somewhere new.
+Choose one from the arrow beside **Open Folder…** to open it directly. The most
+recently opened folder moves to the top.
 For a folder on an external drive, connect the drive before opening it.
 
 The current year is included in On This Day. Scanning runs in the background,
@@ -53,22 +59,23 @@ title in muted text and in the window title.
 
 | Control | Action |
 | --- | --- |
-| `Q` or DELETE | Send the current file to the Recycle Bin or Trash |
-| `W` or Right arrow | Keep and move forward |
+| `Q` or Delete | Send the current file to the Recycle Bin or Trash |
+| `W` or Keep | Keep and move forward |
+| Right arrow | Move forward |
 | Left arrow | Go back to the previous available file |
 | Left/right edge of the preview | Browse backward/forward |
-| Backspace or UNDO | Windows: restore the most recent deletion, when available |
+| Backspace, `Ctrl+Z` or Undo | Windows: restore the most recent deletion and return to it |
 | Centre of a video preview | Open it in your default player |
 | Folder path | Open the containing folder |
-| Clean | Remove unused video previews after confirmation |
+| `…` › Clear Thumbnail Cache… | Remove unused video previews after confirmation |
 
 Keeping a file leaves it where it is. Image Swiper does not move it or add tags.
 
 ## Deleted files and undo
 
 On **Windows**, deleted files go to the Recycle Bin. Image Swiper supports undoing
-the most recent deletion while UNDO is available. The completion screen disables
-that button; you can still restore files through the Recycle Bin.
+the most recent deletion while **Undo** is available, including from the
+completion screen. You can also restore files through the Recycle Bin.
 
 On **macOS and Linux**, files go to the system Trash. Restore them through your
 file manager; in-app undo is unavailable on these platforms.

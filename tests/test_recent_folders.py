@@ -36,9 +36,8 @@ class RecentFolderTests(unittest.TestCase):
         warning.assert_called_once()
         window.load_images.assert_not_called()
 
-    def test_dropdown_opens_saved_folder_without_a_picker(self):
-        window = SimpleNamespace(recent_folder_var=Mock(), recent_folders=SimpleNamespace(folders=['saved']),
+    def test_recent_menu_opens_saved_folder_without_a_picker(self):
+        window = SimpleNamespace(recent_folders=SimpleNamespace(folders=['saved']),
                                  open_review_folder=Mock())
-        window.recent_folder_var.get.return_value = 'saved'
-        LibraryMixin.select_recent_folder(window)
+        LibraryMixin.select_recent_folder(window, 'saved')
         window.open_review_folder.assert_called_once_with('saved')

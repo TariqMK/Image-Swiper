@@ -9,6 +9,13 @@ def main():
         from .version import __version__
         print(__version__)
         return
+    if sys.platform == 'win32':
+        # Render at the display's real resolution instead of a blurry bitmap stretch.
+        try:
+            import ctypes
+            ctypes.windll.shcore.SetProcessDpiAwareness(1)
+        except Exception:
+            pass
     root = tk.Tk()
     # __file__ also resolves inside PyInstaller's bundled resources.
     icon_path = Path(__file__).resolve().parent.parent / 'docs' / 'assets' / 'image-swiper-icon-v2.png'

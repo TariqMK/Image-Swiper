@@ -1,6 +1,5 @@
 """Application state and review actions."""
 
-import tkinter as tk
 from tkinter import messagebox
 from datetime import datetime
 import sqlite3
@@ -13,6 +12,7 @@ from .media import MediaMixin
 from .metadata import MetadataMixin
 from .cache import CacheMixin
 from .library import LibraryMixin
+from .theme import Theme
 from .version import __version__
 from .recent_folders import RecentFolders
 
@@ -27,22 +27,8 @@ class ImageOrganizer(UiMixin, MediaMixin, MetadataMixin, CacheMixin, LibraryMixi
         self._scan_after = None
         self.root.protocol('WM_DELETE_WINDOW', self.close)
         self.root.title(f"Image Swiper v{__version__}")
-        self.root.geometry("1100x800")
-        
-        # Modern color scheme - dark elegant theme
-        self.bg_primary = '#0f0f0f'
-        self.bg_secondary = '#1a1a1a'
-        self.bg_card = '#252525'
-        self.accent_primary = '#6366f1'  # Indigo
-        self.accent_success = '#10b981'  # Emerald
-        self.accent_danger = '#ef4444'   # Red
-        self.accent_warning = '#f59e0b'  # Amber
-        self.accent_info = '#3b82f6'     # Blue
-        self.text_primary = '#f8fafc'
-        self.text_secondary = '#94a3b8'
-        self.text_muted = '#64748b'
-        
-        self.root.configure(bg=self.bg_primary)
+        self.theme = Theme(root)
+        self.root.geometry(f"{self.theme.px(1180)}x{self.theme.px(820)}")
         
         self.images = []
         self.current_index = 0
@@ -55,7 +41,9 @@ class ImageOrganizer(UiMixin, MediaMixin, MetadataMixin, CacheMixin, LibraryMixi
         self.target_date = None
         self.viewing_date = datetime.now()  # Track which day we're viewing for "On This Day"
         self.last_deleted = None
+        self.last_deleted_index = None
         self.last_deleted_size = 0
+        self.deleted_indices = set()
         self.processed_count = 0
         self.deleted_count = 0
         self.space_saved_mb = 0
@@ -86,6 +74,7 @@ class ImageOrganizer(UiMixin, MediaMixin, MetadataMixin, CacheMixin, LibraryMixi
         
         self.setup_ui()
         self.bind_keys()
+        self.style_title_bar()
         self._scan_after = self.root.after(50, self.poll_scan)
 
     def close(self):
@@ -119,9 +108,11 @@ class ImageOrganizer(UiMixin, MediaMixin, MetadataMixin, CacheMixin, LibraryMixi
             conn.close()
             
             self.last_deleted = file_path
+            self.last_deleted_index = self.current_index
             self.last_deleted_size = file_size_mb
+            self.deleted_indices.add(self.current_index)
             if CAN_RESTORE:
-                self.undo_btn.config(state=tk.NORMAL, bg=self.accent_warning)
+                self.undo_btn.set_enabled(True)
             self.deleted_count += 1
             self.processed_count += 1
             self.space_saved_mb += file_size_mb
@@ -162,9 +153,15 @@ class ImageOrganizer(UiMixin, MediaMixin, MetadataMixin, CacheMixin, LibraryMixi
             conn.commit()
             conn.close()
             
-            messagebox.showinfo("Undo", f"Restored: {self.last_deleted.name}")
+            # Return to the restored file so the undo is visible.
+            index = self.last_deleted_index
+            if index is not None and index < len(self.images) and self.images[index] == self.last_deleted:
+                self.deleted_indices.discard(index)
+                self.current_index = index
+                self.set_review_enabled(True)
             self.last_deleted = None
-            self.undo_btn.config(state=tk.DISABLED, bg='#4a4a4a')
+            self.last_deleted_index = None
+            self.undo_btn.set_enabled(False)
             self.deleted_count -= 1
             self.processed_count -= 1
             self.space_saved_mb -= self.last_deleted_size

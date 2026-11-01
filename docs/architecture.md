@@ -6,7 +6,10 @@ may describe features absent from the current application.
 `app.ImageOrganizer` owns review state and coordinates actions. Focused mixins
 preserve shared state while separating the original class into modules:
 
-- `ui.py`: widgets, keyboard bindings and opening external applications.
+- `ui.py`: window layout, contact strip, menus, keyboard bindings and opening
+  external applications.
+- `theme.py`, `widgets.py`, `icons.py`: colour and type tokens, canvas-drawn
+  buttons and switches, and antialiased line icons drawn with Pillow.
 - `library.py`: scanning, filtering and sorting.
 - `media.py`: image decoding, video thumbnails and canvas rendering.
 - `metadata.py`: date extraction, matching and size formatting.
@@ -50,10 +53,10 @@ use per-user application storage instead of writing inside the bundle. `version.
 the UI renders that version in muted header text. See [releases](releases.md)
 for the manual build workflow and platform-specific behavior.
 
-The Recent folders dropdown stores full paths in `recent_folders.json` beside
+The recent folders menu (the arrow beside Open Folder…) stores full paths in `recent_folders.json` beside
 the runtime database, inside private `data/` storage. Source runs therefore ignore
 the history through the existing `/data/` rule. Windows bundles use ignored
 `cache/` beside the executable; macOS/Linux use per-user storage.
 History is deduplicated and capped at three entries. Missing drives are checked
 only when selected, and malformed history is ignored without blocking startup.
-Selecting a recent folder uses the same reset and cancellable scan as Select Folder.
+Selecting a recent folder uses the same reset and cancellable scan as Open Folder….
