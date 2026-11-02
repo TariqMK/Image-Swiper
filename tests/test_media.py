@@ -52,4 +52,5 @@ class VideoPreviewNameTests(unittest.TestCase):
             project = Path(__file__).resolve().parents[1]
             after_restart = subprocess.run([sys.executable, '-c', FIND_PREVIEW, temporary],
                                            cwd=project, check=True, capture_output=True, text=True)
-            self.assertEqual(after_restart.stdout.strip(), str(first))
+            # The last line is the result; optional-format warnings may precede it.
+            self.assertEqual(after_restart.stdout.strip().splitlines()[-1], str(first))
