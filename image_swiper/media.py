@@ -13,6 +13,16 @@ try:
 except Exception as exc:
     print(f'WARNING: HEIC support not available: {exc}')
 
+
+def open_detached(path):
+    """Decode an image fully into memory and close its file.
+
+    Pillow keeps multi-frame files (GIF, TIFF, phone MPO JPEGs) open after
+    load(), and Windows refuses to delete a file that is still open.
+    """
+    with Image.open(path) as source:
+        return source.copy()
+
 class MediaMixin:
     def check_ffmpeg(self):
         try:
@@ -81,19 +91,19 @@ class MediaMixin:
 
             if self.current_file_is_video:
                 thumb_path = self.generate_video_thumbnail(file_path)
-                img = Image.open(thumb_path) if thumb_path and thumb_path.exists() else None
+                img = open_detached(thumb_path) if thumb_path and thumb_path.exists() else None
             else:
                 # Handle different image formats
                 if file_path.suffix.lower() == '.cr3':
                     try:
                         import rawpy
-                        raw = rawpy.imread(str(file_path))
-                        img = Image.fromarray(raw.postprocess())
+                        with rawpy.imread(str(file_path)) as raw:
+                            img = Image.fromarray(raw.postprocess())
                     except ImportError:
                         raise Exception("CR3 support requires 'rawpy'. Install with: pip install rawpy")
                     except Exception as cr3_error:
                         try:
-                            img = Image.open(file_path)
+                            img = open_detached(file_path)
                         except:
                             raise cr3_error
                 elif file_path.suffix.lower() in ['.heic', '.heif']:
@@ -103,29 +113,28 @@ class MediaMixin:
                         img = Image.frombytes(heif_file.mode, heif_file.size, heif_file.data, "raw")
                     except Exception as heic_error:
                         try:
-                            img = Image.open(file_path)
+                            img = open_detached(file_path)
                         except:
                             raise heic_error
                 elif file_path.suffix.lower() in ['.raw', '.cr2', '.nef', '.arw', '.dng', '.orf']:
                     try:
                         import rawpy
-                        raw = rawpy.imread(str(file_path))
-                        img = Image.fromarray(raw.postprocess())
+                        with rawpy.imread(str(file_path)) as raw:
+                            img = Image.fromarray(raw.postprocess())
                     except ImportError:
                         raise Exception("RAW file support requires 'rawpy'. Install with: pip install rawpy")
                     except Exception as raw_error:
                         try:
-                            img = Image.open(file_path)
+                            img = open_detached(file_path)
                         except:
                             raise raw_error
                 else:
-                    img = Image.open(file_path)
+                    img = open_detached(file_path)
             
             if img is None:
                 self.set_canvas_message('Preview unavailable',
                                         'Click to open this video in your default player.')
             else:
-                img.load()
                 self._source_img = img
                 self._canvas_message = None
                 self.render_canvas()
