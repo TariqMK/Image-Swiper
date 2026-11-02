@@ -4,6 +4,7 @@ from tkinter import messagebox
 from PIL import Image
 from .processes import run_background
 from datetime import datetime
+from hashlib import sha1
 from uuid import uuid4
 
 # Register HEIC decoding when the optional package is installed.
@@ -36,7 +37,8 @@ class MediaMixin:
         if not self.ffmpeg_available:
             return None
         
-        thumb_name = f"{hash(str(video_path))}.jpg"
+        # hash() changes every launch, so derive a name that stays stable.
+        thumb_name = f"{sha1(str(video_path).encode('utf-8')).hexdigest()}.jpg"
         thumb_path = self.thumbnails_dir / thumb_name
         
         if thumb_path.exists():
