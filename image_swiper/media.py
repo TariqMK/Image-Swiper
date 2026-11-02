@@ -5,6 +5,7 @@ from PIL import Image
 from .processes import run_background
 from datetime import datetime
 from hashlib import sha1
+from threading import Thread
 from uuid import uuid4
 
 # Register HEIC decoding when the optional package is installed.
@@ -33,14 +34,16 @@ class MediaMixin:
             return False
 
 
+    def video_thumbnail_path(self, video_path):
+        # hash() changes every launch, so derive a name that stays stable.
+        return self.thumbnails_dir / f"{sha1(str(video_path).encode('utf-8')).hexdigest()}.jpg"
+
+
     def generate_video_thumbnail(self, video_path):
         if not self.ffmpeg_available:
             return None
         
-        # hash() changes every launch, so derive a name that stays stable.
-        thumb_name = f"{sha1(str(video_path).encode('utf-8')).hexdigest()}.jpg"
-        thumb_path = self.thumbnails_dir / thumb_name
-        
+        thumb_path = self.video_thumbnail_path(video_path)
         if thumb_path.exists():
             return thumb_path
 
@@ -48,7 +51,7 @@ class MediaMixin:
         work_path = thumb_path.with_name(f'.{thumb_path.stem}.{uuid4().hex}.jpg')
         try:
             run_background(
-                ['ffmpeg', '-i', str(video_path), '-ss', '00:00:01', 
+                ['ffmpeg', '-ss', '00:00:01', '-i', str(video_path),
                  '-vframes', '1', '-q:v', '2', str(work_path)],
                 timeout=10, check=True
             )
@@ -65,6 +68,45 @@ class MediaMixin:
                 pass
         
         return None
+
+
+    def request_video_preview(self, video_path):
+        """Make a missing preview off the UI thread so clicks stay responsive.
+
+        One FFmpeg runs at a time; skipping quickly past videos only previews
+        the one you stop on.
+        """
+        if self._preview_thread is not None and self._preview_thread.is_alive():
+            return
+        self._preview_file = video_path
+        self._preview_thread = Thread(target=self.generate_video_thumbnail, args=(video_path,),
+                                      name='video-preview', daemon=True)
+        self._preview_thread.start()
+        self.root.after(50, self.poll_video_preview)
+
+
+    def poll_video_preview(self):
+        if self._closing:
+            return
+        if self._preview_thread.is_alive():
+            self.root.after(50, self.poll_video_preview)
+            return
+        finished, self._preview_file = self._preview_file, None
+        if not self.video_thumbnail_path(finished).exists():
+            self._preview_failed.add(finished)
+        current = self.current_file()
+        if current is None or not self.is_video_file(current):
+            return
+        if current == finished or self.video_thumbnail_path(current).exists():
+            self.show_current_image()
+        elif current not in self._preview_failed:
+            self.request_video_preview(current)
+
+
+    def wait_for_video_preview(self, video_path):
+        """Let FFmpeg release a video before it is deleted."""
+        if self._preview_file == video_path and self._preview_thread.is_alive():
+            self._preview_thread.join(timeout=15)
 
 
     def is_video_file(self, file_path):
@@ -91,9 +133,15 @@ class MediaMixin:
             self.current_file_is_video = self.is_video_file(file_path)
             thumb_path = None
 
+            preview_coming = False
             if self.current_file_is_video:
-                thumb_path = self.generate_video_thumbnail(file_path)
-                img = open_detached(thumb_path) if thumb_path and thumb_path.exists() else None
+                thumb_path = self.video_thumbnail_path(file_path)
+                if not thumb_path.exists():
+                    thumb_path = None
+                    if self.ffmpeg_available and file_path not in self._preview_failed:
+                        self.request_video_preview(file_path)
+                        preview_coming = True
+                img = open_detached(thumb_path) if thumb_path else None
             else:
                 # Handle different image formats
                 if file_path.suffix.lower() == '.cr3':
@@ -134,7 +182,7 @@ class MediaMixin:
                     img = open_detached(file_path)
             
             if img is None:
-                self.set_canvas_message('Preview unavailable',
+                self.set_canvas_message('Loading preview' if preview_coming else 'Preview unavailable',
                                         'Click to open this video in your default player.')
             else:
                 self._source_img = img
@@ -142,7 +190,7 @@ class MediaMixin:
                 self.render_canvas()
             
             file_date = self.get_cached_date(file_path)
-            if self.current_file_is_video and thumb_path and thumb_path.exists():
+            if self.current_file_is_video and thumb_path:
                 self.record_thumbnail(file_path, thumb_path)
             self.update_caption(file_path, file_date, file_path.stat().st_size)
             self.update_stats()

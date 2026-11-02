@@ -44,6 +44,9 @@ class ImageOrganizer(UiMixin, MediaMixin, MetadataMixin, CacheMixin, LibraryMixi
         self.last_deleted_index = None
         self.last_deleted_size = 0
         self.deleted_indices = set()
+        self._preview_thread = None
+        self._preview_file = None
+        self._preview_failed = set()
         self.processed_count = 0
         self.deleted_count = 0
         self.space_saved_mb = 0
@@ -99,6 +102,7 @@ class ImageOrganizer(UiMixin, MediaMixin, MetadataMixin, CacheMixin, LibraryMixi
             file_size_bytes = file_path.stat().st_size
             file_size_mb = file_size_bytes / (1024 * 1024)
             
+            self.wait_for_video_preview(file_path)
             delete_file(file_path)
             
             conn = sqlite3.connect(self.db_path)
@@ -135,7 +139,9 @@ class ImageOrganizer(UiMixin, MediaMixin, MetadataMixin, CacheMixin, LibraryMixi
             
             if is_video:
                 file_date = self.get_video_date(self.last_deleted)
-                thumbnail_path = self.generate_video_thumbnail(self.last_deleted)
+                thumbnail_path = self.video_thumbnail_path(self.last_deleted)
+                if not thumbnail_path.exists():
+                    thumbnail_path = None
             else:
                 file_date = self.extract_image_date(self.last_deleted)
                 thumbnail_path = None
