@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <!-- Image Swiper app icon, simplified for 16, 24 and 32 px: bigger shapes, no sun, a four-block strip.
+       Keep it in step with image-swiper.svg. -->
+  <rect x="12" y="12" width="1000" height="1000" rx="228" fill="#1a1b1d" stroke="#2e3034" stroke-width="24"/>
+  <g transform="translate(430 440) rotate(-7) scale(1.08)">
+    <rect x="-170" y="-210" width="340" height="420" rx="34" fill="#45474d"/>
+  </g>
+  <g transform="translate(586 410) rotate(8) scale(1.08)">
+    <rect x="-170" y="-210" width="340" height="420" rx="34" fill="#ececec"/>
+    <rect x="-128" y="-168" width="256" height="300" rx="10" fill="#26282c"/>
+    <path d="M-128 132 L-128 40 L-40 -48 L40 30 L128 -40 L128 132 Z" fill="#55e0c6"/>
+  </g>
+  <rect x="152" y="790" width="150" height="120" rx="32" fill="#5a5d63"/>
+  <rect x="342" y="790" width="150" height="120" rx="32" fill="#c93c3f"/>
+  <rect x="532" y="790" width="150" height="120" rx="32" fill="#55e0c6"/>
+  <rect x="722" y="790" width="150" height="120" rx="32" fill="#34363b"/>
+</svg>

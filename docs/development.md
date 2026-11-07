@@ -28,12 +28,34 @@ Linux may require the distribution's Tkinter package. The existing Windows batch
 launcher uses `venv/`, while the examples above create `.venv/`.
 `python Image_Swiper.py` remains a compatibility entry point.
 
-## Documentation screenshots
+## Brand images and screenshots
 
-Public README screenshots belong in `docs/screenshots/`. PNG, JPG, JPEG and WebP
-files directly in that folder have explicit Git ignore exceptions. Other private
-media remains ignored. Use relative image links from README.md; encode spaces
-in filenames as `%20`.
+Brand files live in `assets/`. Do not edit the generated files by hand.
+
+- `assets/icon/image-swiper.svg` is the icon master. `image-swiper-small.svg` is
+  the simplified version for 16, 24 and 32 px. Keep the two in step.
+- `assets/make_assets.py` writes the `.png`, `.ico` and `.icns` icons, `banner.png`,
+  `social-card.png` and `image_swiper/app_icon.py` (the embedded window icon).
+  The tagline and colours are set at the top of the script and in `theme.py`.
+- `assets/make_screenshots.py` opens the real app with generated sample photos
+  and saves `assets/screenshots/review.png` and `on-this-day.png`.
+
+### Update the icon, banner and social card
+
+1. Edit the SVG masters or the values at the top of `assets/make_assets.py`.
+2. Install the generator tools in any Python environment: `pip install PySide6-Essentials Pillow`.
+3. Run `python assets/make_assets.py` from the repository root.
+4. Upload a changed social card on GitHub: **Settings** > **General** >
+   **Social preview** > **Edit** > **Upload an image**, then choose
+   `assets/social-card.png`.
+
+### Update the screenshots
+
+**Note:** The script runs on Windows and shows the app window for a few seconds.
+
+1. Install the app's dependencies (see [Run from source](#run-from-source)).
+2. Run `python assets/make_screenshots.py --version v3.0.2`, with the newest
+   release tag.
 
 ## Project structure
 
@@ -49,13 +71,14 @@ Image Swiper/
 |   |-- metadata.py       # Dates and formatting
 |   |-- cache.py          # SQLite cache and thumbnail cleanup
 |   |-- recycle_bin.py    # Windows deletion and restoration
+|   |-- app_icon.py       # Embedded window icon (generated)
 |   |-- version.py        # Version displayed in the GUI
 |   `-- paths.py          # Private runtime paths and legacy migration
 |-- data/                 # Private generated cache and thumbnails (ignored)
 |-- Meta/                 # Private historical context (ignored)
+|-- assets/               # Icon, banner, social card, screenshots and their scripts
 |-- docs/
-|   |-- architecture.md
-|   `-- screenshots/      # Public documentation screenshots
+|   `-- architecture.md
 |-- tests/
 |-- scripts/              # Version allocation and packaging
 |-- Image_Swiper.py       # Compatibility launcher
@@ -86,7 +109,7 @@ private per-user application storage; see [release instructions](releases.md#dow
 
 Git ignores `data/`, `Meta/`, `private/`, `personal/`, legacy caches, databases,
 common media formats, logs, local settings, credentials and Python environments.
-Put other personal files in `private/` or `personal/`. Documentation screenshots
+Put other personal files in `private/` or `personal/`. Brand files in `assets/`
 are an explicit public exception. Ignore rules do not remove already tracked
 files or erase Git history.
 

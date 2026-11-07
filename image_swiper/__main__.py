@@ -1,6 +1,6 @@
 """Run with python -m image_swiper."""
 import tkinter as tk
-from pathlib import Path
+from . import app_icon
 from .app import ImageOrganizer
 
 def main():
@@ -17,10 +17,9 @@ def main():
         except Exception:
             pass
     root = tk.Tk()
-    # __file__ also resolves inside PyInstaller's bundled resources.
-    icon_path = Path(__file__).resolve().parent.parent / 'docs' / 'assets' / 'image-swiper-icon-v2.png'
-    root._app_icon = tk.PhotoImage(file=str(icon_path))
-    root.iconphoto(True, root._app_icon)
+    # The icon is embedded in the package, so the build ships no loose icon file.
+    root._app_icons = [tk.PhotoImage(data=data) for data in app_icon.WINDOW]
+    root.iconphoto(True, *root._app_icons)
     ImageOrganizer(root)
     root.mainloop()
 

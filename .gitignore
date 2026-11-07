@@ -65,15 +65,9 @@ Image_Swiper.bat
 *.[iI][cC][oO]
 *.[sS][vV][gG]
 
-# Public screenshots deliberately added for the README.
-!/docs/screenshots/*.[pP][nN][gG]
-!/docs/screenshots/*.[jJ][pP][gG]
-!/docs/screenshots/*.[jJ][pP][eE][gG]
-!/docs/screenshots/*.[wW][eE][bB][pP]
-
-# Public application icons and README banners.
-!/docs/assets/
-!/docs/assets/**
+# Public brand files: icon, banner, social card and README screenshots.
+!/assets/
+!/assets/**
 
 # Local Python environment and tooling.
 venv/

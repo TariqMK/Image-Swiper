@@ -21,16 +21,21 @@ def main():
     command = [sys.executable, '-m', 'PyInstaller', '--noconfirm', '--clean',
                '--onedir', '--windowed', '--name', 'ImageSwiper',
                '--collect-all', 'pillow_heif', '--collect-all', 'rawpy']
-    assets = ROOT / 'docs' / 'assets'
-    icon = assets / ('image-swiper-icon-v2.ico' if sys.platform == 'win32' else 'image-swiper-icon-v2.png')
-    # Pillow lets PyInstaller convert the PNG to an ICNS for the macOS bundle.
-    command += ['--icon', str(icon), '--add-data',
-                f'{assets / "image-swiper-icon-v2.png"}{os.pathsep}docs/assets']
+    # File icons for the exe and the .app. Linux executables have none; the window icon is
+    # embedded in the package (image_swiper/app_icon.py).
+    icons = ROOT / 'assets' / 'icon'
+    if sys.platform == 'win32':
+        command += ['--icon', str(icons / 'image-swiper.ico')]
+    elif sys.platform == 'darwin':
+        command += ['--icon', str(icons / 'image-swiper.icns')]
     if sys.platform == 'darwin':
         command += ['--target-architecture', 'arm64', '--osx-bundle-identifier', 'app.imageswiper.desktop']
     command += [str(ROOT / 'Image_Swiper.py')]
     environment = dict(os.environ, PYINSTALLER_CONFIG_DIR=str(ROOT / 'build' / 'pyinstaller-cache'))
     subprocess.run(command, cwd=ROOT, env=environment, check=True)
+    if sys.platform == 'darwin' and not list((ROOT / 'dist' / 'ImageSwiper.app' / 'Contents' /
+                                              'Resources').glob('*.icns')):
+        raise RuntimeError('The macOS app bundle has no icon (.icns)')
     # A frozen smoke-test does not create a window or read/write personal data.
     executable = ROOT / 'dist' / 'ImageSwiper' / ('ImageSwiper.exe' if sys.platform == 'win32' else 'ImageSwiper')
     subprocess.run([str(executable), '--version'], check=True, timeout=60)

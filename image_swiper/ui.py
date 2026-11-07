@@ -6,14 +6,14 @@ import os
 import subprocess
 import sys
 from datetime import datetime
-from pathlib import Path
+import base64
+import io
 from PIL import Image, ImageTk
-from . import icons
+from . import app_icon, icons
 from .recycle_bin import CAN_RESTORE
 from .version import __version__
 from .widgets import FlatButton, Segmented, Switch
 
-ICON_PATH = Path(__file__).resolve().parent.parent / 'docs' / 'assets' / 'image-swiper-icon-v2.png'
 MOD = 'Command' if sys.platform == 'darwin' else 'Control'
 MOD_LABEL = '⌘' if sys.platform == 'darwin' else 'Ctrl '
 FILE_MANAGER = {'win32': 'Explorer', 'darwin': 'Finder'}.get(sys.platform, 'file manager')
@@ -71,7 +71,8 @@ class UiMixin:
         inner.pack(fill=tk.BOTH, expand=True, padx=t.px(16))
 
         try:
-            mark = self._image('mark', lambda: Image.open(ICON_PATH).convert('RGBA').resize(
+            mark = self._image('mark', lambda: Image.open(
+                io.BytesIO(base64.b64decode(app_icon.TOOLBAR))).convert('RGBA').resize(
                 (t.px(22), t.px(22)), Image.Resampling.LANCZOS))
             tk.Label(inner, image=mark, bg=t.bar).pack(side=tk.LEFT, padx=(0, t.px(10)))
         except OSError:

@@ -1,12 +1,10 @@
-![Image Swiper](docs/assets/image-swiper-banner-v2.svg)
-
-# Image Swiper
+![Image Swiper. Keep or delete. One at a time.](assets/banner.png)
 
 Go through a folder of photos and videos one at a time, keep what you want and
 send the rest to the Recycle Bin. Turn on **On This Day** to see what you took on
 today's date in every past year.
 
-![Image Swiper interface](docs/screenshots/Screenshot%2001.png)
+<img src="assets/screenshots/review.png" alt="Image Swiper part-way through a folder: a photo, the contact strip with one deleted frame, and the Undo, Delete and Keep buttons" width="840">
 
 ## Download
 
@@ -65,6 +63,8 @@ Use **Name**, **Date** or **Shuffle** in the toolbar to choose the order. Name
 sorts numbers naturally, so `IMG_9` comes before `IMG_10`.
 
 ### On This Day
+
+<img src="assets/screenshots/on-this-day.png" alt="Image Swiper with On This Day on: a photo taken on 7 November, 8 years ago, and the day arrows in the toolbar" width="840">
 
 Turn on **On This Day** to see only photos and videos taken on today's date, in
 any year, including this one. Use the arrows beside it to go back or forward a
