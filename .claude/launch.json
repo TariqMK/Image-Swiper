@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "site",
+      "runtimeExecutable": "D:\\OneDrive\\02_Projects\\Image Swiper\\venv\\Scripts\\python.exe",
+      "runtimeArgs": ["-m", "http.server", "8765", "--bind", "127.0.0.1", "--directory", "D:\\OneDrive\\02_Projects\\Image Swiper\\docs"],
+      "port": 8765
+    }
+  ]
+}

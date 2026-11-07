@@ -1,0 +1,208 @@
+<!-- Image Swiper product page: one static page served by GitHub Pages from docs/. -->
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Image Swiper — keep or delete, one photo at a time</title>
+  <meta name="description" content="A free desktop app for Windows, macOS and Linux. Go through a folder of photos and videos one at a time, keep what you want and send the rest to the Recycle Bin. On This Day shows what you took on today's date in past years.">
+  <meta name="theme-color" content="#111213">
+  <meta name="color-scheme" content="dark">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Image Swiper">
+  <meta property="og:description" content="Keep or delete. One at a time. A free desktop app for going through your photos and videos.">
+  <meta property="og:url" content="https://tariqmk.github.io/Image-Swiper/">
+  <meta property="og:image" content="https://tariqmk.github.io/Image-Swiper/social-card.png">
+  <meta property="og:image:width" content="1280">
+  <meta property="og:image:height" content="640">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Image Swiper">
+  <meta name="twitter:description" content="Keep or delete. One at a time. A free desktop app for going through your photos and videos.">
+  <meta name="twitter:image" content="https://tariqmk.github.io/Image-Swiper/social-card.png">
+  <link rel="stylesheet" href="style.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-folder" viewBox="0 0 24 24"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></symbol>
+  <symbol id="i-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+  <symbol id="i-left" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></symbol>
+  <symbol id="i-right" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M10 11v6M14 11v6"/></symbol>
+  <symbol id="i-undo" viewBox="0 0 24 24"><path d="M9 14 4 9l5-5M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></symbol>
+  <symbol id="i-more" viewBox="0 0 24 24"><path d="M5 12h.01M12 12h.01M19 12h.01"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></symbol>
+</svg>
+
+<header class="nav">
+  <div class="wrap nav-row">
+    <a class="brand" href="#top"><img src="icon.svg" alt="" width="28" height="28">Image Swiper</a>
+    <nav class="nav-links" aria-label="Sections">
+      <a href="#features">Features</a>
+      <a href="#download">Download</a>
+      <a href="https://github.com/TariqMK/Image-Swiper">GitHub</a>
+    </nav>
+    <a class="btn btn-small btn-primary" href="#download">Download</a>
+  </div>
+</header>
+
+<main id="top">
+  <section class="hero">
+    <svg class="motif" viewBox="0 0 1024 1024" aria-hidden="true">
+      <g transform="translate(450 480) rotate(-6)"><rect x="-170" y="-210" width="340" height="420" rx="30"/></g>
+      <g transform="translate(574 452) rotate(7)"><rect x="-170" y="-210" width="340" height="420" rx="30"/><rect x="-142" y="-182" width="284" height="318" rx="12"/></g>
+    </svg>
+    <div class="wrap hero-text">
+      <h1>Keep or delete.<br>One at a time.</h1>
+      <p class="lede">Image Swiper shows the photos and videos in a folder one after another. Keep what you want, send the rest to the Recycle Bin, and turn on On This Day to see what you took on today's date in past years.</p>
+      <div class="actions">
+        <a class="btn btn-primary" id="hero-download" href="https://github.com/TariqMK/Image-Swiper/releases/latest">
+          <svg class="i"><use href="#i-download"/></svg><span id="hero-download-label">Download</span>
+        </a>
+        <a class="btn btn-ghost" href="https://github.com/TariqMK/Image-Swiper">View source</a>
+      </div>
+      <p class="meta" id="hero-meta">Free · Windows, macOS and Linux · Works offline</p>
+    </div>
+
+    <div class="wrap">
+      <div class="window" id="demo" aria-label="Animated preview of Image Swiper reviewing a folder" role="img">
+        <div class="toolbar">
+          <img src="icon.svg" alt="" width="22" height="22">
+          <span class="app-name">Image Swiper</span>
+          <span class="app-version" data-version>3.0.2</span>
+          <span class="sep"></span>
+          <span class="ctl"><svg class="i"><use href="#i-folder"/></svg>Open Folder…</span>
+          <span class="ctl ctl-icon hide-s"><svg class="i"><use href="#i-down"/></svg></span>
+          <span class="sep hide-s"></span>
+          <span class="seg hide-s"><span class="on">Name</span><span>Date</span><span>Shuffle</span></span>
+          <span class="switch hide-m"><span class="track on"></span>Subfolders</span>
+          <span class="switch hide-m"><span class="track"></span>On This Day</span>
+          <span class="ctl ctl-ghost push hide-s"><svg class="i"><use href="#i-more"/></svg></span>
+        </div>
+        <div class="viewer"><div class="photo" id="demo-photo"></div></div>
+        <div class="strip-row">
+          <div class="strip" id="demo-strip"></div>
+          <span class="stats" id="demo-stats"></span>
+        </div>
+        <div class="decision">
+          <div class="caption">
+            <div class="line1"><span class="date" id="demo-date"></span><span class="ago" id="demo-ago"></span></div>
+            <div class="line2"><span id="demo-meta"></span><span class="path hide-s"><svg class="i"><use href="#i-folder"/></svg>D:\Pictures\Holiday 2019</span></div>
+          </div>
+          <div class="buttons">
+            <span class="dbtn ghost hide-m" id="demo-undo"><svg class="i"><use href="#i-undo"/></svg>Undo<kbd>Ctrl Z</kbd></span>
+            <span class="dbtn danger" id="demo-delete"><svg class="i"><use href="#i-trash"/></svg>Delete<kbd>Q</kbd></span>
+            <span class="dbtn primary" id="demo-keep"><svg class="i"><use href="#i-check"/></svg>Keep<kbd>W</kbd></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap principles" aria-label="Principles">
+    <div>
+      <h2 class="h3">Nothing changes until you press Delete</h2>
+      <p>Keeping, browsing, changing the order and On This Day never touch your files. Deleted files go to the Recycle Bin or Trash, and on Windows Undo brings the last one back.</p>
+    </div>
+    <div>
+      <h2 class="h3">Your photos stay on your computer</h2>
+      <p>Image Swiper doesn't connect to the internet and never writes into your photo folders. It keeps file dates and video previews in its own cache.</p>
+    </div>
+    <div>
+      <h2 class="h3">Opens what your camera makes</h2>
+      <p>JPEG, HEIC and camera RAW files such as CR3, NEF and ARW, plus MP4, MOV and other videos. Dates come from each file's own capture information.</p>
+    </div>
+  </section>
+
+  <section class="wrap section" id="features">
+    <div class="eyebrow" data-step="3" aria-hidden="true"></div>
+    <h2>A whole folder, one decision at a time</h2>
+    <p class="section-lede">Press W to keep and Q to delete. The strip under each photo shows where you are in the folder and what you've removed so far.</p>
+
+    <div class="panel panel-strip">
+      <div class="panel-head">
+        <div>
+          <h3>The contact strip</h3>
+          <p>One block per file. Grey for files you've passed, red for files you deleted, teal for where you are now. Click anywhere on the strip to jump there.</p>
+        </div>
+        <dl class="tally">
+          <div><dt>Reviewed</dt><dd id="strip-reviewed">0</dd></div>
+          <div><dt>Deleted</dt><dd id="strip-deleted">0</dd></div>
+          <div><dt>Freed</dt><dd id="strip-freed">0 MB</dd></div>
+        </dl>
+      </div>
+      <div class="strip strip-big" id="big-strip" title="Click to jump"></div>
+      <div class="strip-legend"><span><i class="k passed"></i>Passed</span><span><i class="k deleted"></i>Deleted</span><span><i class="k current"></i>You are here</span></div>
+    </div>
+
+    <div class="panel panel-otd">
+      <div class="panel-head">
+        <div>
+          <h3>On This Day</h3>
+          <p>Shows only the photos and videos taken on today's date, in any year. Use the arrows to go back or forward a day and catch up on days you missed.</p>
+        </div>
+        <div class="otd-controls" aria-hidden="true">
+          <span class="switch"><span class="track on"></span>On This Day</span>
+          <span class="stepper"><svg class="i"><use href="#i-left"/></svg><span id="otd-day"></span><svg class="i"><use href="#i-right"/></svg></span>
+        </div>
+      </div>
+      <div class="prints" id="otd-prints"></div>
+    </div>
+
+    <ul class="grid">
+      <li><h3>Keep or delete</h3><p>Keep with <kbd>W</kbd>, delete with <kbd>Q</kbd>, or click the buttons.</p></li>
+      <li><h3>Undo</h3><p><kbd>Ctrl Z</kbd> or Backspace restores the last deleted file on Windows.</p></li>
+      <li><h3>Your order</h3><p>Name, Date or Shuffle. Names sort naturally, so IMG_9 comes before IMG_10.</p></li>
+      <li><h3>Subfolders</h3><p>Leave it on to include every folder inside the one you open.</p></li>
+      <li><h3>Recent folders</h3><p>The arrow beside Open Folder… reopens one of your last three folders.</p></li>
+      <li><h3>Years ago</h3><p>Each photo shows the date it was taken and how many years ago that was.</p></li>
+      <li><h3>Videos</h3><p>Click a video to play it in your default player. FFmpeg adds previews.</p></li>
+      <li><h3>Camera RAW</h3><p>CR2, CR3, NEF, ARW, DNG and ORF open alongside JPEG and HEIC.</p></li>
+      <li><h3>Open the folder</h3><p>Click a photo's folder to open it in Explorer or Finder.</p></li>
+      <li><h3>Edge clicks</h3><p>Click the left or right edge of a photo to go back or forward.</p></li>
+      <li><h3>Space freed</h3><p>A running count of files deleted and space sent to the bin.</p></li>
+      <li><h3>Fast return visits</h3><p>Dates are read once and cached, so a folder opens faster next time.</p></li>
+    </ul>
+  </section>
+
+  <section class="wrap section" id="download">
+    <div class="eyebrow" data-step="6" aria-hidden="true"></div>
+    <h2>Download</h2>
+    <p class="section-lede" id="download-lede">Free. Extract the download to a folder you can write to, such as Documents, and keep everything in it together. Nothing else to install.</p>
+    <div class="cards">
+      <a class="card" data-os="windows" href="https://github.com/TariqMK/Image-Swiper/releases/latest">
+        <h3>Windows</h3>
+        <p class="file"><span>64-bit · ZIP</span><span class="size"></span></p>
+        <p>Open <code>ImageSwiper.exe</code>. If SmartScreen says it protected your PC, click More info, then Run anyway.</p>
+      </a>
+      <a class="card" data-os="macos" href="https://github.com/TariqMK/Image-Swiper/releases/latest">
+        <h3>macOS</h3>
+        <p class="file"><span>Apple silicon · ZIP</span><span class="size"></span></p>
+        <p>Open <code>ImageSwiper.app</code>. If it won't open, go to System Settings › Privacy &amp; Security and click Open Anyway. Intel Macs aren't supported.</p>
+      </a>
+      <a class="card" data-os="linux" href="https://github.com/TariqMK/Image-Swiper/releases/latest">
+        <h3>Linux</h3>
+        <p class="file"><span>x64 · TAR.GZ</span><span class="size"></span></p>
+        <p>Run <code>ImageSwiper/ImageSwiper</code> from a desktop session. Ubuntu 22.04 or newer is supported.</p>
+      </a>
+    </div>
+    <p class="fine">Image Swiper isn't signed, so your computer may warn you the first time. For video previews, install <a href="https://ffmpeg.org/download.html">FFmpeg</a>. To run from source, see the <a href="https://github.com/TariqMK/Image-Swiper/blob/main/docs/development.md">development notes</a>.</p>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-row">
+    <a class="brand" href="#top"><img src="icon.svg" alt="" width="24" height="24">Image Swiper</a>
+    <p>There's no confirmation on Q. Network drives and some USB drives have no Recycle Bin, so try a copy of a folder first.</p>
+    <nav aria-label="Project links">
+      <a href="https://github.com/TariqMK/Image-Swiper">GitHub</a>
+      <a href="https://github.com/TariqMK/Image-Swiper/releases">Releases</a>
+      <a href="https://github.com/TariqMK/Image-Swiper/issues">Issues</a>
+    </nav>
+  </div>
+</footer>
+</body>
+</html>

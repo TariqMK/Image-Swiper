@@ -68,6 +68,10 @@ Image_Swiper.bat
 # Public brand files: icon, banner, social card and README screenshots.
 !/assets/
 !/assets/**
+# GitHub Pages site images.
+!/docs/icon.svg
+!/docs/apple-touch-icon.png
+!/docs/social-card.png
 
 # Local Python environment and tooling.
 venv/

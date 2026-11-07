@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <!-- Image Swiper app icon, master. Two prints on a graphite tile over the app's contact strip.
+       assets/make_assets.py renders every icon size from this file (16-32 px use image-swiper-small.svg). -->
+  <rect x="8" y="8" width="1008" height="1008" rx="228" fill="#1a1b1d" stroke="#2e3034" stroke-width="10"/>
+  <!-- Back print: the pile still to review. -->
+  <g transform="translate(450 480) rotate(-6) scale(1.02)">
+    <rect x="-170" y="-210" width="340" height="420" rx="30" fill="#3a3c41"/>
+  </g>
+  <!-- Front print: the photo being decided on. -->
+  <g transform="translate(574 452) rotate(7) scale(1.02)">
+    <rect x="-170" y="-210" width="340" height="420" rx="30" fill="#ececec"/>
+    <rect x="-142" y="-182" width="284" height="318" rx="12" fill="#26282c"/>
+    <circle cx="58" cy="-104" r="34" fill="#ececec"/>
+    <path d="M-142 136 L-142 44 L-52 -46 L28 34 L78 -6 L142 58 L142 136 Z" fill="#55e0c6"/>
+  </g>
+  <!-- Contact strip: reviewed, reviewed, deleted, reviewed, current, upcoming, upcoming. -->
+  <rect x="318" y="842" width="48" height="48" rx="12" fill="#4a4c52"/>
+  <rect x="382" y="842" width="48" height="48" rx="12" fill="#4a4c52"/>
+  <rect x="446" y="842" width="48" height="48" rx="12" fill="#c93c3f"/>
+  <rect x="510" y="842" width="48" height="48" rx="12" fill="#4a4c52"/>
+  <rect x="574" y="842" width="48" height="48" rx="12" fill="#55e0c6"/>
+  <rect x="638" y="842" width="48" height="48" rx="12" fill="#2e3034"/>
+  <rect x="702" y="842" width="48" height="48" rx="12" fill="#2e3034"/>
+</svg>

@@ -36,6 +36,11 @@ Brand files live in `assets/`. Do not edit the generated files by hand.
   the simplified version for 16, 24 and 32 px. Keep the two in step.
 - `assets/make_assets.py` writes the `.png`, `.ico` and `.icns` icons, `banner.png`,
   `social-card.png` and `image_swiper/app_icon.py` (the embedded window icon).
+  It also refreshes the website's copies in `docs/`: `icon.svg`,
+  `apple-touch-icon.png` and `social-card.png`.
+- The website is `docs/index.html`, `style.css` and `app.js`, served by GitHub
+  Pages from `main` / `/docs`. Preview it with
+  `python -m http.server 8765 --bind 127.0.0.1 --directory docs`.
   The tagline and colours are set at the top of the script and in `theme.py`.
 - `assets/make_screenshots.py` opens the real app with generated sample photos
   and saves `assets/screenshots/review.png` and `on-this-day.png`.

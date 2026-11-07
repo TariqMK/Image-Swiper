@@ -7,6 +7,7 @@ Writes:
   assets/banner.png                  README banner, 1280 x 320 px drawn at 2x
   assets/social-card.png             GitHub social preview, 1280 x 640 px
   image_swiper/app_icon.py           window and toolbar icons embedded as PNG data
+  docs/icon.svg, docs/apple-touch-icon.png, docs/social-card.png   copies for the website
 
 Reads assets/icon/image-swiper.svg (master) and assets/icon/image-swiper-small.svg (16-32 px).
 Colours come from image_swiper/theme.py, so the brand follows the app.
@@ -242,6 +243,17 @@ def write_social_card(guides: str | None) -> bool:
     return ok
 
 
+def write_site_copies() -> None:
+    """GitHub Pages serves only docs/, so the site gets its own copies."""
+    docs = ROOT / 'docs'
+    docs.joinpath('icon.svg').write_bytes(MASTER.read_bytes())
+    docs.joinpath('social-card.png').write_bytes((ASSETS / 'social-card.png').read_bytes())
+    # iOS masks the corners itself and wants no transparency, so fill behind the tile.
+    touch = Image.new('RGBA', (180, 180), Theme.bar)
+    touch.alpha_composite(icon(180))
+    touch.convert('RGB').save(docs / 'apple-touch-icon.png', optimize=True)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -251,7 +263,8 @@ def main() -> int:
     write_icons()
     write_banner()
     ok = write_social_card(args.guides)
-    print('Wrote icon files, image_swiper/app_icon.py, banner.png and social-card.png')
+    write_site_copies()
+    print('Wrote icon files, image_swiper/app_icon.py, banner.png, social-card.png and docs/ copies')
     return 0 if ok else 1
 
 
