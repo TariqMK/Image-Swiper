@@ -12,11 +12,12 @@ from .media import MediaMixin
 from .metadata import MetadataMixin
 from .cache import CacheMixin
 from .library import LibraryMixin
+from .updates import UpdatesMixin
 from .theme import Theme
 from .version import __version__
 from .recent_folders import RecentFolders
 
-class ImageOrganizer(UiMixin, MediaMixin, MetadataMixin, CacheMixin, LibraryMixin):
+class ImageOrganizer(UiMixin, MediaMixin, MetadataMixin, CacheMixin, LibraryMixin, UpdatesMixin):
     def __init__(self, root):
         self.root = root
         self._closing = False

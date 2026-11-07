@@ -148,6 +148,8 @@ class UiMixin:
                          state=tk.NORMAL if self.current_file() else tk.DISABLED)
         menu.add_separator()
         menu.add_command(label='Clear Thumbnail Cache…', command=self.clean_thumbnails)
+        menu.add_separator()
+        menu.add_command(label='Check for Updates…', command=self.check_for_updates)
         self._post_menu(menu, self.more_btn)
 
     def build_menubar(self):
@@ -182,6 +184,10 @@ class UiMixin:
         view_menu.add_command(label='Previous Day', command=self.previous_day)
         view_menu.add_command(label='Next Day', command=self.next_day)
         menubar.add_cascade(label='View', menu=view_menu)
+
+        help_menu = tk.Menu(menubar, name='help', tearoff=0)
+        help_menu.add_command(label='Check for Updates…', command=self.check_for_updates)
+        menubar.add_cascade(label='Help', menu=help_menu)
         self.root.config(menu=menubar)
 
     # Viewer and contact strip
