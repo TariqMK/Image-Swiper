@@ -7,7 +7,13 @@ import random
 
 def scan_library(folder, *, cancel, extensions, include_subdirs, get_date,
                  sort_key, sort_by_date, on_this_day, reference_date,
-                 random_mode, progress):
+                 random_mode, progress, choose_day=None):
+    """Return the files to review.
+
+    With `choose_day` and On This Day on, the day is picked at random from the
+    days that have dated files, `choose_day((month, day))` is called with it
+    (or with None when nothing is dated), and `reference_date` is ignored.
+    """
     images = []
     # One filesystem traversal rather than two walks per supported extension.
     for directory, subdirs, filenames in os.walk(folder):
@@ -26,7 +32,7 @@ def scan_library(folder, *, cancel, extensions, include_subdirs, get_date,
         return []
     images.sort(key=sort_key)
     if sort_by_date or on_this_day:
-        dated = []
+        entries = []
         for i, path in enumerate(images):
             if cancel.is_set():
                 return []
@@ -37,9 +43,20 @@ def scan_library(folder, *, cancel, extensions, include_subdirs, get_date,
                 return []
             if date is not None:
                 date = date.replace(tzinfo=None)
-            if on_this_day and (date is None or (date.month, date.day) != (reference_date.month, reference_date.day)):
-                continue
-            dated.append((path, date or datetime.min))
+            entries.append((path, date))
+        target = None
+        if on_this_day:
+            if choose_day is not None:
+                # Every day that has something is equally likely, however many files it has.
+                days = sorted({(d.month, d.day) for _, d in entries if d is not None})
+                target = random.choice(days) if days else None
+                choose_day(target)
+                if target is None:
+                    return []
+            else:
+                target = (reference_date.month, reference_date.day)
+        dated = [(path, date or datetime.min) for path, date in entries
+                 if target is None or (date is not None and (date.month, date.day) == target)]
         dated.sort(key=lambda item: (item[1], sort_key(item[0])))
         images = [path for path, _ in dated]
     if random_mode and not on_this_day:

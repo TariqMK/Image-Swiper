@@ -34,7 +34,8 @@
   <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M10 11v6M14 11v6"/></symbol>
   <symbol id="i-undo" viewBox="0 0 24 24"><path d="M9 14 4 9l5-5M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></symbol>
   <symbol id="i-more" viewBox="0 0 24 24"><path d="M5 12h.01M12 12h.01M19 12h.01"/></symbol>
-  <symbol id="i-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></symbol>
+  <symbol id="i-dice" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M8 8h.01M16 8h.01M12 12h.01M8 16h.01M16 16h.01"/></symbol>
+  <symbol id="i-download"viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></symbol>
 </svg>
 
 <header class="nav">
@@ -80,6 +81,7 @@
           <span class="seg hide-s"><span class="on">Name</span><span>Date</span><span>Shuffle</span></span>
           <span class="switch hide-m"><span class="track on"></span>Subfolders</span>
           <span class="switch hide-m"><span class="track"></span>On This Day</span>
+          <span class="ctl ctl-ghost hide-l"><svg class="i"><use href="#i-dice"/></svg>Random Day</span>
           <span class="ctl ctl-ghost push hide-s"><svg class="i"><use href="#i-more"/></svg></span>
         </div>
         <div class="viewer"><div class="photo" id="demo-photo"></div></div>
@@ -142,11 +144,12 @@
       <div class="panel-head">
         <div>
           <h3>On This Day</h3>
-          <p>Shows only the photos and videos taken on today's date, in any year. Use the arrows to go back or forward a day and catch up on days you missed.</p>
+          <p>Shows only the photos and videos taken on today's date, in any year. Use the arrows to go back or forward a day, or click Random Day to jump to a date that has something on it.</p>
         </div>
         <div class="otd-controls" aria-hidden="true">
           <span class="switch"><span class="track on"></span>On This Day</span>
           <span class="stepper"><svg class="i"><use href="#i-left"/></svg><span id="otd-day"></span><svg class="i"><use href="#i-right"/></svg></span>
+          <span class="ctl ctl-ghost" id="otd-random"><svg class="i"><use href="#i-dice"/></svg>Random Day</span>
         </div>
       </div>
       <div class="prints" id="otd-prints"></div>

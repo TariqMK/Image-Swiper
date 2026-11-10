@@ -70,6 +70,12 @@ Turn on **On This Day** to see only photos and videos taken on today's date, in
 any year, including this one. Use the arrows beside it to go back or forward a
 day, for example to catch up on days you missed.
 
+Click **Random Day** to see a random date. Click it again for another random date.
+
+- Random Day picks only from dates that have photos or videos in the folder.
+- Random Day turns on On This Day if it is off.
+- After a random pick, the arrows go back or forward from that day.
+
 ### Recent folders
 
 Click the arrow beside **Open Folder…** to reopen one of your last three folders.

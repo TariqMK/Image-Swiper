@@ -72,7 +72,7 @@ class LibraryMixin:
         
         if self.on_this_day_mode:
             # Show the day stepper beside the switch
-            self.date_nav_frame.pack(side=tk.LEFT, padx=(self.theme.px(8), 0))
+            self.date_nav_frame.pack(side=tk.LEFT, padx=(self.theme.px(8), 0), before=self.random_day_btn)
             # Reset to today
             self.viewing_date = datetime.now()
             self.update_viewing_date_label()
@@ -101,14 +101,39 @@ class LibraryMixin:
             self.load_images(self.current_folder)
 
 
+    def random_day(self):
+        """Turn On This Day on and jump to a random day that has photos or videos."""
+        if not self.on_this_day_mode:
+            self.this_day_var.set(True)
+            self.on_this_day_mode = True
+            self.this_day_switch.redraw()
+            self.date_nav_frame.pack(side=tk.LEFT, padx=(self.theme.px(8), 0), before=self.random_day_btn)
+            self.update_viewing_date_label()
+        if getattr(self, 'current_folder', None):
+            self.load_images(self.current_folder, random_day=True)
+
+
+    def set_viewing_day(self, month, day):
+        now = datetime.now()
+        year = now.year
+        while True:  # 29 February needs a leap year
+            try:
+                self.viewing_date = now.replace(year=year, month=month, day=day)
+                break
+            except ValueError:
+                year -= 1
+        self.update_viewing_date_label()
+
+
     def update_viewing_date_label(self):
         """Update the label showing which day we're viewing"""
         self.viewing_date_label.config(text=f"{self.viewing_date.day} {self.viewing_date:%b}")
 
 
-    def load_images(self, folder):
+    def load_images(self, folder, random_day=False):
         if self._closing:
             return
+        self._no_dated_files = False
         if self._scan_cancel is not None:
             self._scan_cancel.set()
         self.current_folder = folder
@@ -136,6 +161,8 @@ class LibraryMixin:
             reference_date=self.viewing_date,
             random_mode=self.random_mode,
         )
+        if random_day and self.on_this_day_mode:
+            options['choose_day'] = lambda day: self._scan_messages.put((generation, 'day', day))
         def work():
             try:
                 with DateCache(worker.db_path) as cache:
@@ -164,7 +191,12 @@ class LibraryMixin:
                 break
             if generation != self._scan_generation:
                 continue
-            if kind == 'progress':
+            if kind == 'day':
+                if value is None:
+                    self._no_dated_files = True
+                else:
+                    self.set_viewing_day(*value)
+            elif kind == 'progress':
                 title = self._canvas_message[0] if self._canvas_message else 'Scanning'
                 self.set_canvas_message(title, value)
             elif kind == 'error':
@@ -186,8 +218,11 @@ class LibraryMixin:
             self._scan_after = self.root.after(50, self.poll_scan)
 
     def show_empty_folder(self):
-        if self.on_this_day_mode:
-            day = f"{self.viewing_date.day} {self.viewing_date:%B}"
+        if self.on_this_day_mode and getattr(self, '_no_dated_files', False):
+            self.set_canvas_message('No dated photos or videos',
+                                    'Nothing in this folder has a date to pick a day from.')
+        elif self.on_this_day_mode:
+            day =f"{self.viewing_date.day} {self.viewing_date:%B}"
             self.set_canvas_message(f'Nothing from {day}',
                                     'No photos or videos from this day in any year. '
                                     'Try another day with the arrows beside On This Day.')

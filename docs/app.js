@@ -227,15 +227,31 @@ function otdDemo() {
     const ages = AGES[((offset % AGES.length) + AGES.length) % AGES.length];
     prints.innerHTML = ages.map((age, i) => {
       const year = new Date().getFullYear() - age;
-      return `<figure class="print">${scene(day.getDate() * 7 + i * 3 + offset)}
+      return `<figure class="print">${scene(day.getDate() * 7 + i * 3 + Math.abs(offset))}
         <figcaption><span class="when">${day.getDate()} ${MONTHS[day.getMonth()]} ${year}</span><span class="ago">${yearsAgo(year)}</span></figcaption></figure>`;
     }).join("");
   }
+  const random = $("#otd-random");
+  let jumped = false;
   render();
   every(4000, () => {
+    // Step back through recent days, press Random Day once, then return to today.
+    const jump = offset === -3 && !jumped;
+    if (jump) {
+      random.classList.add("press");
+      setTimeout(() => random.classList.remove("press"), 500);
+    }
     prints.classList.add("out");
     setTimeout(() => {
-      offset = offset <= -3 ? 0 : offset - 1; // Step back through recent days, then return to today.
+      if (jump) {
+        offset = -(20 + Math.floor(Math.random() * 300));
+        jumped = true;
+      } else if (offset <= -3) {
+        offset = 0;
+        jumped = false;
+      } else {
+        offset -= 1;
+      }
       render();
       prints.classList.remove("out");
     }, 240);

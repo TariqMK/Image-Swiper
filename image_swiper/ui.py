@@ -112,6 +112,10 @@ class UiMixin:
                                        variant='ghost', icon='chevron-right', height=28)
         self.next_day_btn.pack(side=tk.LEFT)
 
+        self.random_day_btn = FlatButton(inner, t, 'Random Day', self.random_day,
+                                         variant='ghost', icon='dice', height=28)
+        self.random_day_btn.pack(side=tk.LEFT, padx=(t.px(8), 0))
+
         self.more_btn = FlatButton(inner, t, command=self.show_more_menu, variant='ghost', icon='more')
         self.more_btn.pack(side=tk.RIGHT)
 
@@ -183,6 +187,7 @@ class UiMixin:
                                   command=self.toggle_this_day)
         view_menu.add_command(label='Previous Day', command=self.previous_day)
         view_menu.add_command(label='Next Day', command=self.next_day)
+        view_menu.add_command(label='Random Day', command=self.random_day)
         menubar.add_cascade(label='View', menu=view_menu)
 
         help_menu = tk.Menu(menubar, name='help', tearoff=0)

@@ -77,6 +77,30 @@ class ScanningTests(unittest.TestCase):
             result = scan_library(root, **self.options(Event(), lambda path: dates[path.name]))
             self.assertEqual([path.name for path in result], ['b.jpg', 'a.JPG'])
 
+    def test_random_day_picks_a_day_that_has_files(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            dates = {'a.jpg': datetime(2022, 3, 5), 'b.jpg': datetime(2019, 3, 5),
+                     'c.jpg': datetime(2021, 7, 9), 'd.jpg': None}
+            for name in dates:
+                (root / name).touch()
+            for _ in range(20):
+                chosen = []
+                options = self.options(Event(), lambda path: dates[path.name])
+                result = scan_library(root, choose_day=chosen.append, **options)
+                self.assertIn(chosen[0], [(3, 5), (7, 9)])
+                expected = ['b.jpg', 'a.jpg'] if chosen[0] == (3, 5) else ['c.jpg']
+                self.assertEqual([path.name for path in result], expected)
+
+    def test_random_day_with_no_dated_files_reports_none(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            (root / 'a.jpg').touch()
+            chosen = []
+            result = scan_library(root, choose_day=chosen.append,
+                                  **self.options(Event(), lambda path: None))
+            self.assertEqual((result, chosen), ([], [None]))
+
     def test_nonrecursive_scan_excludes_subfolders(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
