@@ -2,7 +2,7 @@
 
 Go through a folder of photos and videos one at a time, keep what you want and
 send the rest to the Recycle Bin. Turn on **On This Day** to see what you took on
-today's date in every past year.
+today's date in every past year. Works offline. No tracking.
 
 <img src="assets/screenshots/review.png" alt="Image Swiper part-way through a folder: a photo, the contact strip with one deleted frame, and the Undo, Delete and Keep buttons" width="840">
 
@@ -128,6 +128,14 @@ the wrong day in On This Day.
 
 ## Updating
 
+To check for a new version:
+
+1. Click the version number beside **Image Swiper** in the toolbar.
+2. Read the result. If a new version is available, click **Open release page**.
+
+The version number turns teal when a new version is available. It stays teal until
+you close the app.
+
 Download the new version and extract it. On Windows, copy the `cache` folder from
 your old Image Swiper folder into the new one, beside `ImageSwiper.exe`. This keeps
 your saved dates, video previews and recent folders. On macOS and Linux, your saved
@@ -143,17 +151,24 @@ in it, back them up first. Nothing is moved automatically.
 
 </details>
 
-## Your data
+## Privacy
 
-Image Swiper runs entirely on your computer and doesn't connect to the internet.
-To make repeat visits fast, it saves file dates, video previews and your last three
-folders:
+- **Works offline.** Every feature except the update check works with no internet
+  connection.
+- **No tracking.** The app has no telemetry, analytics, crash reports or accounts.
+- **One network connection, only when you ask.** When you select the version
+  number, the app asks GitHub (api.github.com) for the latest release. It sends
+  nothing else and nothing is downloaded. **Open release page** opens the release
+  page in your browser.
+- **Your photos stay where they are.** The app never writes into your photo
+  folders. It changes a file only when you delete it.
+- **Saved data stays on your computer.** To make repeat visits fast, the app saves
+  file dates, video previews and your last three folders:
+  - **Windows:** in a `cache` folder beside `ImageSwiper.exe`
+  - **macOS and Linux:** in your account's application data folder
 
-- **Windows:** in a `cache` folder beside `ImageSwiper.exe`
-- **macOS and Linux:** in your account's application data folder
-
-It never writes anything into your photo folders. To clear out previews of videos
-you've since deleted, use **…** › **Clear Thumbnail Cache…** in the toolbar.
+To remove previews of videos you have deleted, select **…** › **Clear Thumbnail
+Cache…** in the toolbar.
 
 ## Troubleshooting
 

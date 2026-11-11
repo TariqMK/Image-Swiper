@@ -184,6 +184,83 @@ class Segmented(_CanvasControl):
             self.create_text(x + self.seg_w // 2, self.h // 2, text=label, font=self.font, fill=color)
 
 
+class Tooltip:
+    """A small label that appears below a widget after the pointer rests on it."""
+
+    def __init__(self, widget, theme, text, delay=500):
+        self.widget, self.theme, self.text, self.delay = widget, theme, text, delay
+        self._after = None
+        self._tip = None
+        widget.bind('<Enter>', self._schedule, add='+')
+        widget.bind('<Leave>', self._hide, add='+')
+        widget.bind('<ButtonPress>', self._hide, add='+')
+
+    def _schedule(self, event=None):
+        self._hide()
+        self._after = self.widget.after(self.delay, self._show)
+
+    def _show(self):
+        self._after = None
+        t = self.theme
+        self._tip = tk.Toplevel(self.widget)
+        self._tip.wm_overrideredirect(True)
+        tk.Label(self._tip, text=self.text, bg=t.control_active, fg=t.text, font=t.font(12),
+                 padx=t.px(8), pady=t.px(4)).pack()
+        x = self.widget.winfo_rootx()
+        y = self.widget.winfo_rooty() + self.widget.winfo_height() + t.px(6)
+        self._tip.wm_geometry(f'+{x}+{y}')
+
+    def _hide(self, event=None):
+        if self._after is not None:
+            self.widget.after_cancel(self._after)
+            self._after = None
+        if self._tip is not None:
+            self._tip.destroy()
+            self._tip = None
+
+
+class VersionButton(tk.Label):
+    """The version next to the app name. Click it, or press Return or Space on it, to check for updates."""
+
+    def __init__(self, parent, theme, version, command):
+        t = theme
+        super().__init__(parent, text=version, bg=t.bar, fg=t.text_muted, font=t.font(11, 'mono'),
+                         padx=t.px(6), pady=t.px(2), cursor='hand2', takefocus=1,
+                         highlightthickness=t.px(1), highlightbackground=t.bar, highlightcolor=t.accent)
+        self.theme = theme
+        self.version = version
+        self.command = command
+        self.checking = False
+        self.update_available = False
+        self.tooltip = Tooltip(self, theme, 'Check for updates')
+        self.bind('<Enter>', lambda e: self._paint(hover=True), add='+')
+        self.bind('<Leave>', lambda e: self._paint(), add='+')
+        self.bind('<ButtonRelease-1>', self._activate)
+        self.bind('<Return>', self._activate)
+        self.bind('<space>', self._activate)
+
+    def _activate(self, event=None):
+        if not self.checking:
+            self.command()
+        return 'break'
+
+    def _paint(self, hover=False):
+        t = self.theme
+        fg = t.accent if self.update_available else t.text_muted
+        self.configure(bg=t.control if hover and not self.checking else t.bar, fg=fg,
+                       cursor='' if self.checking else 'hand2')
+
+    def set_checking(self, checking):
+        self.checking = checking
+        self.configure(text='checking…' if checking else self.version)
+        self._paint()
+
+    def mark_update(self, latest):
+        self.update_available = True
+        self.tooltip.text = f'{latest} is available. Click for details.'
+        self._paint()
+
+
 class Switch(_CanvasControl):
     def __init__(self, parent, theme, text, variable, command, bg=None):
         super().__init__(parent, theme, bg or theme.bar)

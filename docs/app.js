@@ -303,7 +303,7 @@ async function downloads() {
     const when = `${date.getDate()} ${MONTHS[date.getMonth()]} ${date.getFullYear()}`;
     $("#hero-meta").textContent = `${tag} · Free · Windows, macOS and Linux · Works offline`;
     $("#download-lede").textContent = `${tag}, released ${when}. Free. Extract the download to a folder you can write to, such as Documents, and keep everything in it together. Nothing else to install.`;
-    document.querySelectorAll("[data-version]").forEach((el) => (el.textContent = tag.replace(/^v/, "")));
+    document.querySelectorAll("[data-version]").forEach((el) => (el.textContent = tag));
   } catch (err) {
     // Offline, rate-limited or no release yet: every link already points at the Releases page.
   }

@@ -12,7 +12,7 @@ from PIL import Image, ImageTk
 from . import app_icon, icons
 from .recycle_bin import CAN_RESTORE
 from .version import __version__
-from .widgets import FlatButton, Segmented, Switch
+from .widgets import FlatButton, Segmented, Switch, VersionButton
 
 MOD = 'Command' if sys.platform == 'darwin' else 'Control'
 MOD_LABEL = '⌘' if sys.platform == 'darwin' else 'Ctrl '
@@ -79,8 +79,8 @@ class UiMixin:
             pass
         tk.Label(inner, text='Image Swiper', bg=t.bar, fg=t.text,
                  font=t.font(14, semibold=True)).pack(side=tk.LEFT)
-        tk.Label(inner, text=__version__, bg=t.bar, fg=t.text_muted,
-                 font=t.font(11, 'mono')).pack(side=tk.LEFT, padx=(t.px(8), 0), pady=(t.px(2), 0))
+        self.version_btn = VersionButton(inner, t, 'v' + __version__.lstrip('v'), self.check_for_updates)
+        self.version_btn.pack(side=tk.LEFT, padx=(t.px(2), 0), pady=(t.px(2), 0))
 
         self._separator(inner)
         FlatButton(inner, t, 'Open Folder…', self.select_folder, icon='folder').pack(side=tk.LEFT)
@@ -152,8 +152,6 @@ class UiMixin:
                          state=tk.NORMAL if self.current_file() else tk.DISABLED)
         menu.add_separator()
         menu.add_command(label='Clear Thumbnail Cache…', command=self.clean_thumbnails)
-        menu.add_separator()
-        menu.add_command(label='Check for Updates…', command=self.check_for_updates)
         self._post_menu(menu, self.more_btn)
 
     def build_menubar(self):
@@ -451,14 +449,15 @@ class UiMixin:
         self.stats_label.config(text=f'{self.deleted_count:,} deleted  ·  {freed_text} freed' if n else '')
         self.render_strip()
 
-    def style_title_bar(self):
+    def style_title_bar(self, window=None):
         """Match the Windows title bar to the toolbar instead of the default white."""
         if sys.platform != 'win32':
             return
+        window = window or self.root
         try:
             import ctypes
-            self.root.update_idletasks()
-            hwnd = ctypes.windll.user32.GetParent(self.root.winfo_id())
+            window.update_idletasks()
+            hwnd = ctypes.windll.user32.GetParent(window.winfo_id())
             dark = ctypes.c_int(1)
             ctypes.windll.dwmapi.DwmSetWindowAttribute(hwnd, 20, ctypes.byref(dark), ctypes.sizeof(dark))
             r, g, b = (int(self.theme.bar[i:i + 2], 16) for i in (1, 3, 5))
